@@ -4,12 +4,17 @@
 #include <stdlib.h>
 #include <glut.h>
 
+#define IN  (1)
+#define OUT (0)
+#define ON	(1)
+#define OFF (0)
+
 #define RED_RADIUS (0.5)
 #define RED_M (0.5)
 #define BLUE_RADIUS (0.5)
 #define BLUE_M (0.5)
 #define dT (0.001)
-#define EEEEE (1.00)
+#define EEEEE (0.90)
 #define GGGGG (980)
 #define CUBE_SCALE (4.0)
 #define TEAPOT_SCALE (2.0)
@@ -23,6 +28,7 @@ double x_R = 0, x_B = 2.0;
 double V_R = 0, V_B = -1.0, V_save = 0;
 double new_V_B = 0, new_V_R = 0;
 
+#define ATOM_NUM 3
 typedef struct atom{
 	double x;
 	double y;
@@ -33,9 +39,12 @@ typedef struct atom{
 	double assumption_x;
 	double assumption_y;
 	double assumption_z;
+	double assumption_Vy;
+	double flag[1];
+	double reflect[3];//âΩèdÇ…Ç‡ï«Ç…îΩéÀÇ∑ÇÈÇÃÇñhÇÆ
+	double collision[ATOM_NUM];
 }ATOM_MAKE;
 
-#define ATOM_NUM 5
 ATOM_MAKE A[ATOM_NUM];
 
 void atom_make(void){
@@ -47,12 +56,23 @@ void atom_make(void){
 		A[i].x = (double)(rand() % 200 - 100) / 100.0*CUBE_SCALE;
 		A[i].y = (double)(rand() % 200 - 100) / 100.0*CUBE_SCALE;
 		A[i].z = (double)(rand() % 200 - 100) / 100.0*CUBE_SCALE;*/
-		A[i].Vx = 0.0;
+		A[i].Vx = 3.0;
 		A[i].Vy = 0.0;
-		A[i].Vz = 0.0;
+		A[i].Vz = 2.0;
 		A[i].x = 0.0;
 		A[i].y = 7.0;
 		A[i].z = 0.0;
+		A[i].assumption_x  = 0.0;
+		A[i].assumption_y  = 7.0;
+		A[i].assumption_z  = 0.0;
+		A[i].assumption_Vy = 0.0;
+		A[i].flag[0] = OUT;
+		A[i].reflect[0] = ON;
+		A[i].reflect[1] = ON;
+		A[i].reflect[2] = ON;
+		for (int num = 0; num < ATOM_NUM; num++){
+			A[i].collision[num] = ON;
+		}
 	}
 }
 void ModelDarw(void){
@@ -77,46 +97,92 @@ void ModelDarw(void){
 		glPopMatrix();
 	}
 	time_counter++;
-	if (time_counter > 5000){
+	/*å¥éqÇÃê∂ê¨*/
+	if (time_counter > 300){
 		now_atom_num = (now_atom_num + 1 < ATOM_NUM) ? now_atom_num + 1 : ATOM_NUM;
 		time_counter = 0;
+		printf("now_atom_num%d\n", now_atom_num);
 	}
 	
 	glutSwapBuffers();
 }
 void ModelMove(void){
 	for (int i = 0; i < now_atom_num; i++){
-		A[i].assumption_x += A[i].Vx*dT;
-		A[i].assumption_y += A[i].Vy*dT-GGGGG*dT*dT;
-		A[i].assumption_z += A[i].Vz*dT;
+		if (A[i].assumption_y == CUBE_SCALE - RED_RADIUS){
+			A[i].assumption_Vy = 0;
+		}else{
+			A[i].assumption_Vy = A[i].Vy - GGGGG*dT;
+		}		
+		A[i].assumption_x = A[i].x + A[i].Vx*dT;
+		A[i].assumption_y = A[i].y + A[i].Vy*dT;
+		A[i].assumption_z = A[i].z + A[i].Vz*dT;
 	}
 	for (int i = 0; i < now_atom_num; i++){
 		for (int j = 0; j < now_atom_num; j++){
-			if (i <= j){
+			if (i < j){
 				if (sqrt(pow(A[i].assumption_x - A[j].assumption_x, 2) + pow(A[i].assumption_y - A[j].assumption_y, 2) + pow(A[i].assumption_z - A[j].assumption_z, 2)) <= RED_RADIUS + BLUE_RADIUS){
-					A[i].Vx = A[i].Vx + BLUE_M*(EEEEE + 1.0)*(A[j].Vx - A[j].Vx) / (RED_M + BLUE_M);
-					A[j].Vx = A[j].Vx + RED_M*(EEEEE + 1.0)*(A[i].Vx - A[j].Vx) / (RED_M + BLUE_M);
-					A[i].Vy = A[i].Vy + BLUE_M*(EEEEE + 1.0)*(A[j].Vy - A[i].Vy) / (RED_M + BLUE_M);
-					A[j].Vy = A[j].Vy + RED_M*(EEEEE + 1.0)*(A[i].Vy - A[j].Vy) / (RED_M + BLUE_M);
-					A[i].Vz = A[i].Vz + BLUE_M*(EEEEE + 1.0)*(A[j].Vz - A[i].Vz) / (RED_M + BLUE_M);
-					A[j].Vz = A[j].Vz + RED_M*(EEEEE + 1.0)*(A[i].Vz - A[i].Vz) / (RED_M + BLUE_M);
+					if (A[i].collision[j] == ON){
+						A[i].Vx = A[i].Vx + BLUE_M*(EEEEE + 1.0)*(A[j].Vx - A[j].Vx) / (RED_M + BLUE_M);
+						A[j].Vx = A[j].Vx + RED_M*(EEEEE + 1.0)*(A[i].Vx - A[j].Vx) / (RED_M + BLUE_M);
+						A[i].Vy = A[i].Vy + BLUE_M*(EEEEE + 1.0)*(A[j].Vy - A[i].Vy) / (RED_M + BLUE_M);
+						A[j].Vy = A[j].Vy + RED_M*(EEEEE + 1.0)*(A[i].Vy - A[j].Vy) / (RED_M + BLUE_M);
+						A[i].Vz = A[i].Vz + BLUE_M*(EEEEE + 1.0)*(A[j].Vz - A[i].Vz) / (RED_M + BLUE_M);
+						A[j].Vz = A[j].Vz + RED_M*(EEEEE + 1.0)*(A[i].Vz - A[i].Vz) / (RED_M + BLUE_M);
+						A[i].collision[j] = OFF;
+						printf("collision\n");
+					}
+				}else{
+					A[i].collision[j] = ON;
 				}
 			}			
 		}
-	}
-	
-	for (int i = 0; i < now_atom_num; i++){
-		if (abs(A[i].assumption_x - CUBE_SCALE) <= RED_RADIUS || abs(A[i].assumption_x + CUBE_SCALE) <= RED_RADIUS){
-			A[i].Vx *= -EEEEE;
+		if (A[i].flag[0] == IN){
+			//printf("IN%d\n",i);
+			/*ï«ïtãﬂÇ≈å¥éqÇÃîºåaÇÊÇËãﬂÇ¢Ç©îªíË*/
+			if((CUBE_SCALE - RED_RADIUS <= A[i].assumption_x && CUBE_SCALE + RED_RADIUS >= A[i].assumption_x)||
+				(CUBE_SCALE - RED_RADIUS <= -A[i].assumption_x && CUBE_SCALE + RED_RADIUS >= -A[i].assumption_x)){
+				if (A[i].reflect[0] == ON){
+					A[i].Vx *= -EEEEE;
+					A[i].reflect[0] = OFF;
+				}			
+			}else{
+				A[i].reflect[0] = ON;
+			}
+			if((CUBE_SCALE - RED_RADIUS <= A[i].assumption_y && CUBE_SCALE + RED_RADIUS >= A[i].assumption_y)||
+				(CUBE_SCALE - RED_RADIUS <= -A[i].assumption_y && CUBE_SCALE + RED_RADIUS >= -A[i].assumption_y)){
+				if (A[i].reflect[1] == ON){
+					A[i].Vy *= -EEEEE;
+					A[i].reflect[1] = OFF;
+				}
+			}else{
+				A[i].reflect[1] = ON;
+			}
+			if((CUBE_SCALE - RED_RADIUS <= A[i].assumption_z && CUBE_SCALE + RED_RADIUS >= A[i].assumption_z)||
+				(CUBE_SCALE - RED_RADIUS <= -A[i].assumption_z && CUBE_SCALE + RED_RADIUS >= -A[i].assumption_z)){
+				if (A[i].reflect[2] == ON){
+					A[i].Vz *= -EEEEE;
+					A[i].reflect[2] = OFF;
+				}
+			}else{
+				A[i].reflect[2] = ON;
+			}
+		}else if (A[i].flag[0] == OUT){
+			//printf("OUT%d\n",i);
+			/*î†ÇÃì‡ïîÇ…Ç†ÇÈÇ©îªíË*/
+			if (((CUBE_SCALE - RED_RADIUS> A[i].assumption_x) && (-CUBE_SCALE + RED_RADIUS < A[i].assumption_x)) &&
+				((CUBE_SCALE - RED_RADIUS> A[i].assumption_y) && (-CUBE_SCALE + RED_RADIUS < A[i].assumption_y)) &&
+				((CUBE_SCALE - RED_RADIUS> A[i].assumption_z) && (-CUBE_SCALE + RED_RADIUS < A[i].assumption_z))){
+				A[i].flag[0] = IN;
+				//printf("IN_TO\n");
+			}
 		}
-		if (abs(A[i].assumption_y - CUBE_SCALE) <= RED_RADIUS || abs(A[i].assumption_y + CUBE_SCALE) <= RED_RADIUS){
-			A[i].Vy *= -EEEEE;
-		}
-		if (abs(A[i].assumption_z - CUBE_SCALE) <= RED_RADIUS || abs(A[i].assumption_z + CUBE_SCALE) <= RED_RADIUS){
-			A[i].Vz *= -EEEEE;
+		if (A[i].y <= -CUBE_SCALE + RED_RADIUS){
+			A[i].Vy = 0;
+		}else{
+			A[i].Vy -= GGGGG*dT;
 		}
 		A[i].x += A[i].Vx*dT;
-		A[i].y += A[i].Vy*dT - GGGGG*dT*dT;
+		A[i].y += A[i].Vy*dT;
 		A[i].z += A[i].Vz*dT;
 	}
 	ModelDarw();
