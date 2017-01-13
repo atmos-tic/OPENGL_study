@@ -1,13 +1,12 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <stdlib.h>
 #include <glut.h>
+#include "maxwell-demon.h"
+#include "main.h"
 
-#define IN  (1)
-#define OUT (0)
-#define ON	(1)
-#define OFF (0)
+
 
 #define RED_RADIUS (0.5)
 #define RED_M (0.5)
@@ -28,7 +27,7 @@ double x_R = 0, x_B = 2.0;
 double V_R = 0, V_B = -1.0, V_save = 0;
 double new_V_B = 0, new_V_R = 0;
 
-#define ATOM_NUM 3
+
 typedef struct atom{
 	double x;
 	double y;
@@ -42,7 +41,8 @@ typedef struct atom{
 	double assumption_Vy;
 	double flag[1];
 	double reflect[3];//âΩèdÇ…Ç‡ï«Ç…îΩéÀÇ∑ÇÈÇÃÇñhÇÆ
-	double collision[ATOM_NUM];
+	double collision[ATOM_NUM]; 
+	bool colliding[ATOM_NUM];
 }ATOM_MAKE;
 
 ATOM_MAKE A[ATOM_NUM];
@@ -75,6 +75,7 @@ void atom_make(void){
 		}
 	}
 }
+
 void ModelDarw(void){
 	static int time_counter = 0;
 	glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -122,12 +123,12 @@ void ModelMove(void){
 			if (i < j){
 				if (sqrt(pow(A[i].assumption_x - A[j].assumption_x, 2) + pow(A[i].assumption_y - A[j].assumption_y, 2) + pow(A[i].assumption_z - A[j].assumption_z, 2)) <= RED_RADIUS + BLUE_RADIUS){
 					if (A[i].collision[j] == ON){
-						A[i].Vx = A[i].Vx + BLUE_M*(EEEEE + 1.0)*(A[j].Vx - A[j].Vx) / (RED_M + BLUE_M);
+						A[i].Vx = A[i].Vx + BLUE_M*(EEEEE + 1.0)*(A[j].Vx - A[i].Vx) / (RED_M + BLUE_M);
 						A[j].Vx = A[j].Vx + RED_M*(EEEEE + 1.0)*(A[i].Vx - A[j].Vx) / (RED_M + BLUE_M);
 						A[i].Vy = A[i].Vy + BLUE_M*(EEEEE + 1.0)*(A[j].Vy - A[i].Vy) / (RED_M + BLUE_M);
 						A[j].Vy = A[j].Vy + RED_M*(EEEEE + 1.0)*(A[i].Vy - A[j].Vy) / (RED_M + BLUE_M);
 						A[i].Vz = A[i].Vz + BLUE_M*(EEEEE + 1.0)*(A[j].Vz - A[i].Vz) / (RED_M + BLUE_M);
-						A[j].Vz = A[j].Vz + RED_M*(EEEEE + 1.0)*(A[i].Vz - A[i].Vz) / (RED_M + BLUE_M);
+						A[j].Vz = A[j].Vz + RED_M*(EEEEE + 1.0)*(A[i].Vz - A[j].Vz) / (RED_M + BLUE_M);
 						A[i].collision[j] = OFF;
 						printf("collision\n");
 					}
