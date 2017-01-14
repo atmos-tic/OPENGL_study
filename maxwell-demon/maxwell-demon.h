@@ -1,17 +1,16 @@
 #ifndef MAXWELL_DEMON_H
 #define MAXWELL_DEMON_H
 
-#define ATOM_NUM 10
+#define ATOM_NUM 500
 
-#define RED_RADIUS (0.5)
-#define RED_M (0.5)
-#define BLUE_RADIUS (0.5)
-#define BLUE_M (0.5)
-#define dT (0.001)
-#define EEEEE (0.800)
+#define ATOM_SCALE (0.1)
+#define ATOM_M (0.5)
+#define dT (0.0005)
+#define APEAR_INTERVAL (20)
+#define EEEEE (0.700)
 #define GGGGG (980)
-#define CUBE_SCALE (4.0)
-#define TEAPOT_SCALE (2.0)
+#define CUBE_SCALE (2.0)
+#define TEAPOT_SCALE (1.0)
 
 #define ANGLE (3)
 #define X (0)
@@ -24,23 +23,21 @@
 typedef struct atom{
 	double x[3];
 	double v[3];
-	double assumption_x;
-	double assumption_y;
-	double assumption_z;
-	double assumption_Vy;
 	double flag[1];
 	double reflect[3];//âΩèdÇ…Ç‡ï«Ç…îΩéÀÇ∑ÇÈÇÃÇñhÇÆ
 	double collision[ATOM_NUM];
 	bool colliding[ATOM_NUM];
 }ATOM_MAKE;
 
-void Draw_Atom(ATOM_MAKE Atom[]);
+void Atom_Apear(ATOM_MAKE atom[]);
+void Draw_Atom(double atom_scale, ATOM_MAKE atom[], int atom_num, double color[][3]);
+void Atom_thermogram(double v[], double color[]);
 void Draw_TeaPot(double scale, double spot[], double angle[], double color[]);
 void Draw_Cube(double scale, double spot[], double angle[], double color[]);
-void Draw_Atom(double atom_scale, ATOM_MAKE atom[], int atom_num, double color[]);
 void Correct_Spot(double Spot1[], double Spot2[], double distance);
 void Atom_Conflict(ATOM_MAKE atom[], int atom_num);
-
+void Wall_Conflict(ATOM_MAKE atom[], int atom_num);
 double Spot_distance_3d(double spot1[], double spot2[]);
 void Correct_Spot(double Spot1[], double Spot2[], double distance);
+void Correct_Spot_Wall(double Spot[]);
 #endif
