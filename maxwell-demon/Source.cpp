@@ -21,7 +21,7 @@ double cube_spot[3] = { 0.0, 0.0, 0.0 };
 double cube_angle[3] = { 0.0, 0.0, 0.0 };
 double cube_color[3] = { 1.0, 1.0, 1.0 };
 
-double teapot_spot[3] = { 0.0, 0.0, 0.0 };
+double teapot_spot[3] = { 0.0, 7.0, 0.0 };
 double teapot_angle[3] = { 0.0, 0.0, 0.0 };
 double teapot_color[3] = { 1.0, 1.0, 1.0 };
 
