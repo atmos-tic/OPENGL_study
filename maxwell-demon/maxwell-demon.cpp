@@ -13,7 +13,15 @@ void Atom_Apear(ATOM_MAKE atom[]){
 		atom[i].x[Z] = 0.0;
 		atom[i].v[X] = 3.0;
 		atom[i].v[Y] = -1.0;
-		atom[i].v[Z] = 5.0;
+		if (i % 3 == 0){
+			atom[i].v[Z] = 1.0;
+		}
+		else if (i % 3 == 1){
+			atom[i].v[Z] = -1.0;
+		}
+		else{
+			atom[i].v[Z] = 0.0;
+		}	
 		atom[i].flag[0] = OUT;
 		atom[i].reflect[X] = ON;
 		atom[i].reflect[Y] = ON;
@@ -63,7 +71,7 @@ void Draw_Cube(double scale, double spot[], double angle[], double color[]){
 
 
 double Conflict_Function(double V1, double V2, double M1, double M2){
-	return V1 + M2 * (EEEEE + 1.0)*(V2 - V1) / (M1 + M2);
+	return V1 + M2 * (ATOM_E + 1.0)*(V2 - V1) / (M1 + M2);
 }
 
 void Atom_Conflict(ATOM_MAKE atom[], int atom_num){
@@ -107,7 +115,7 @@ void Wall_Conflict(ATOM_MAKE atom[], int atom_num){
 				}
 				if (atom[i].reflect[X] == ON){
 					printf("conX\n");
-					atom[i].v[X] *= -EEEEE;
+					atom[i].v[X] *= -WALL_E;
 					atom[i].reflect[X] = OFF;
 				}
 			}
@@ -118,7 +126,7 @@ void Wall_Conflict(ATOM_MAKE atom[], int atom_num){
 				}
 				if (atom[i].reflect[Y] == ON){
 					printf("conY\n");
-					atom[i].v[Y] *= -EEEEE;
+					atom[i].v[Y] *= -WALL_E;
 					atom[i].reflect[Y] = OFF;
 				}
 			}
@@ -129,7 +137,7 @@ void Wall_Conflict(ATOM_MAKE atom[], int atom_num){
 				}
 				if (atom[i].reflect[Z] == ON){
 					printf("conZ\n");
-					atom[i].v[Z] *= -EEEEE;
+					atom[i].v[Z] *= -WALL_E;
 					atom[i].reflect[Z] = OFF;
 				}
 			}

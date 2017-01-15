@@ -11,7 +11,7 @@ static double spinAngle = 0.0;
 int MouseX = 640, MouseY = 250;
 int MouseX_M = 1.0, MouseY_M = 1.0;
 int WinW = 1, WinH = 1;
-int now_atom_num = 1; 
+int now_atom_num = 0; 
 float size = 1.0;
 double x_R = 0, x_B = 2.0;
 double V_R = 0, V_B = -1.0, V_save = 0;
@@ -23,7 +23,7 @@ double cube_angle[4] = { 0.0
 double cube_color[3] = { 1.0, 1.0, 1.0 };
 
 double teapot_spot[3] = { -0.5, 3.5, 0.0 };
-double teapot_angle[4] = { 0.0, 0.0, -1.0, 45.0 };
+double teapot_angle[4] = { 0.0, 0.0, -1.0, 0.0 };
 double teapot_color[3] = { 1.0, 1.0, 1.0 };
 
 double atom_color[ATOM_NUM][3] = { {1.0} };
@@ -36,15 +36,20 @@ void ModelDarw(void){
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//設定した背景の色ので描写バッファをクリア
 	Draw_Cube(CUBE_SCALE, cube_spot, cube_angle, cube_color);
-	Draw_TeaPot(TEAPOT_SCALE, teapot_spot, teapot_angle, teapot_color);
-	Draw_Atom(ATOM_SCALE, Atom, now_atom_num, atom_color);
-	time_counter++;
+	Draw_TeaPot(TEAPOT_SCALE, teapot_spot, teapot_angle, teapot_color);	
 	/*原子の生成*/
-	if (time_counter > APEAR_INTERVAL){
-		now_atom_num = (now_atom_num + 1 < ATOM_NUM) ? now_atom_num + 1 : ATOM_NUM;
-		time_counter = 0;
-		printf("now_atom_num%d\n", now_atom_num);
-	}	
+	if (teapot_angle[3] < 45.0){
+		teapot_angle[3] += 0.05;
+	}
+	if (teapot_angle[3] > 30){
+		time_counter++;
+		Draw_Atom(ATOM_SCALE, Atom, now_atom_num, atom_color);
+		if (time_counter > APEAR_INTERVAL){
+			now_atom_num = (now_atom_num + 1 < ATOM_NUM) ? now_atom_num + 1 : ATOM_NUM;
+			time_counter = 0;
+			printf("now_atom_num%d\n", now_atom_num);
+		}
+	}
 	glutSwapBuffers();
 }
 void ModelMove(void){
