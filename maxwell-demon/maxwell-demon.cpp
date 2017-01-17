@@ -160,7 +160,7 @@ void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
 			//printf("IN%d\n",i);
 			/*ï«ïtãﬂÇ≈å¥éqÇÃîºåaÇÊÇËãﬂÇ¢Ç©îªíË*/
 			if (((cube_spot[PLUS][X] - ATOM_SCALE < atom[i].x[X]) && (cube_spot[PLUS][X] + ATOM_SCALE > atom[i].x[X])) ||
-				((cube_spot[MINUS][X] - ATOM_SCALE > atom[i].x[X]) && (cube_spot[MINUS][X] + ATOM_SCALE < atom[i].x[X]))){
+				((cube_spot[MINUS][X] + ATOM_SCALE > atom[i].x[X]) && (cube_spot[MINUS][X] - ATOM_SCALE < atom[i].x[X]))){
 				if (atom[i].x[X] * atom[i].v[X] > 0){//ï«Ç…å¸Ç©Ç¡ÇƒÇ∑Ç∑ÇÒÇ≈Ç¢ÇÈÇ∆Ç´ÇÕè’ìÀ
 					atom[i].reflect[X] = ON;
 				}
@@ -170,7 +170,7 @@ void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
 				}
 			}
 			if (((cube_spot[PLUS][Y] - ATOM_SCALE < atom[i].x[Y]) && (cube_spot[PLUS][Y] + ATOM_SCALE > atom[i].x[Y])) ||
-				((cube_spot[MINUS][Y] - ATOM_SCALE > atom[i].x[Y])) && (cube_spot[MINUS][Y] + ATOM_SCALE < atom[i].x[Y])){
+				((cube_spot[MINUS][Y] + ATOM_SCALE > atom[i].x[Y])) && (cube_spot[MINUS][Y] - ATOM_SCALE < atom[i].x[Y])){
 				if (atom[i].x[Y] * atom[i].v[Y] > 0){//ï«Ç…å¸Ç©Ç¡ÇƒÇ∑Ç∑ÇÒÇ≈Ç¢ÇÈÇ∆Ç´ÇÕè’ìÀ
 					atom[i].reflect[Y] = ON;
 				}
@@ -180,7 +180,7 @@ void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
 				}
 			}
 			if (((cube_spot[PLUS][Z] - ATOM_SCALE < atom[i].x[Z]) && (cube_spot[PLUS][Z] + ATOM_SCALE > atom[i].x[Z])) ||
-				((cube_spot[MINUS][Z] - ATOM_SCALE > atom[i].x[Z]) && (cube_spot[MINUS][Z] + ATOM_SCALE < atom[i].x[Z]))){
+				((cube_spot[MINUS][Z] + ATOM_SCALE > atom[i].x[Z]) && (cube_spot[MINUS][Z] - ATOM_SCALE < atom[i].x[Z]))){
 				if (atom[i].x[Z] * atom[i].v[Z] > 0){//ï«Ç…å¸Ç©Ç¡ÇƒÇ∑Ç∑ÇÒÇ≈Ç¢ÇÈÇ∆Ç´ÇÕè’ìÀ
 					atom[i].reflect[Z] = ON;
 				}
@@ -189,7 +189,7 @@ void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
 					atom[i].reflect[Z] = OFF;
 				}
 			}
-			Correct_Spot_Wall(atom[i].x);
+			Correct_Spot_Wall2(atom[i].x, cube_spot);
 		}
 		else if (atom[i].flag[0] == OUT){
 			//printf("OUT%d\n",i);

@@ -64,8 +64,8 @@ void ModelDarw(void){
 
 void Object_Move(void){
 	static double dx[3];
-	dx[0] = 0.0;
-	dx[1] = -0.001;
+	dx[0] = +0.01;
+	dx[1] = 0.0;
 	dx[2] = 0.0;
 	Translate(wall_spot[0], dx);
 	Translate(wall_spot[1], dx);
@@ -74,14 +74,14 @@ void Object_Move(void){
 
 }
 void ModelMove(void){
-	if (teapot_flag == OFF && teapot_angle[3] <= 0 && cube_spot[1] >= -4.0){
+	if (teapot_flag == OFF && teapot_angle[3] <= 0 && cube_spot[0] <= 4.0){
 		printf("move\n");
 		Object_Move();
 	}
 	Atom_Conflict(Atom, now_atom_num); 
 	Wall_Conflict2(Atom, now_atom_num, wall_spot);
 	for (int i = 0; i < now_atom_num; i++){
-		if (Atom[i].x[Y] > wall_spot[1][Y] - ATOM_SCALE){
+		if (Atom[i].x[Y] > wall_spot[1][Y] + ATOM_SCALE){
 			Atom[i].v[Y] -= GGGGG*dT;
 		}
 		Atom[i].x[X] += Atom[i].v[X]*dT;

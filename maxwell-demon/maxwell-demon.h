@@ -1,7 +1,7 @@
 #ifndef MAXWELL_DEMON_H
 #define MAXWELL_DEMON_H
 
-#define ATOM_NUM 10
+#define ATOM_NUM 50
 
 #define ATOM_SCALE (0.1)
 #define ATOM_M (0.5)
