@@ -28,6 +28,6 @@ void Rotate_Z(double x[], double angle){
 
 void Spot_Rotate(double x[], double spot[], double angle[]){
 	x[0] = cos(angle[1])*cos(angle[2])*(x[0] - spot[0]) + (cos(angle[0]) * sin(angle[1])* cos(angle[2]) - cos(angle[0])*sin(angle[2]))*(x[1] - spot[1]) + (sin(angle[0])*sin(angle[2]) + cos(angle[0])*sin(angle[1])*cos(angle[2]))*(x[2] - spot[2]) + spot[0];
-	x[1];
-
+	x[1] = cos(angle[1])*sin(angle[2])*(x[0] - spot[0]) + (cos(angle[0]) * cos(angle[2]) + sin(angle[0])*sin(angle[1])*sin(angle[2])) * (x[1] - spot[1]) + (cos(angle[0])*sin(angle[1])*sin(angle[2]) - sin(angle[0])*cos(angle[2]))*(x[2] - spot[2]) + spot[1];
+	x[2] = -sin(angle[1]) * (x[0] - spot[0]) + sin(angle[0])*cos(angle[1])*(x[1] - spot[1]) + cos(angle[0])*cos(angle[1])*(x[2] - spot[2]) + spot[2];
 }

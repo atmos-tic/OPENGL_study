@@ -3,7 +3,9 @@
 #include <glut.h>
 #include "maxwell-demon.h"
 #include "main.h"
-
+#include "math_make.h"
+#define PLUS 0
+#define MINUS 1
 
 
 void Atom_Apear(ATOM_MAKE atom[]){
@@ -91,7 +93,6 @@ void Atom_Conflict(ATOM_MAKE atom[], int atom_num){
 						Conflict_Function(atom[i].v[Z], atom[j].v[Z], ATOM_M, ATOM_M);
 						Conflict_Function(atom[j].v[Z], atom[i].v[Z], ATOM_M, ATOM_M);
 						atom[i].colliding[j] = ON;
-						printf("collision\n");
 					}
 				}
 				else{
@@ -114,7 +115,6 @@ void Wall_Conflict(ATOM_MAKE atom[], int atom_num){
 					atom[i].reflect[X] = ON;
 				}
 				if (atom[i].reflect[X] == ON){
-					printf("conX\n");
 					atom[i].v[X] *= -WALL_E;
 					atom[i].reflect[X] = OFF;
 				}
@@ -125,7 +125,6 @@ void Wall_Conflict(ATOM_MAKE atom[], int atom_num){
 					atom[i].reflect[Y] = ON;
 				}
 				if (atom[i].reflect[Y] == ON){
-					printf("conY\n");
 					atom[i].v[Y] *= -WALL_E;
 					atom[i].reflect[Y] = OFF;
 				}
@@ -136,7 +135,6 @@ void Wall_Conflict(ATOM_MAKE atom[], int atom_num){
 					atom[i].reflect[Z] = ON;
 				}
 				if (atom[i].reflect[Z] == ON){
-					printf("conZ\n");
 					atom[i].v[Z] *= -WALL_E;
 					atom[i].reflect[Z] = OFF;
 				}
@@ -156,6 +154,56 @@ void Wall_Conflict(ATOM_MAKE atom[], int atom_num){
 	}	
 }
 
+void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
+	for (int i = 0; i < atom_num; i++){
+		if (atom[i].flag[0] == IN){
+			//printf("IN%d\n",i);
+			/*ï«ïtãﬂÇ≈å¥éqÇÃîºåaÇÊÇËãﬂÇ¢Ç©îªíË*/
+			if (((cube_spot[PLUS][X] - ATOM_SCALE < atom[i].x[X]) && (cube_spot[PLUS][X] + ATOM_SCALE > atom[i].x[X])) ||
+				((cube_spot[MINUS][X] - ATOM_SCALE > atom[i].x[X]) && (cube_spot[MINUS][X] + ATOM_SCALE < atom[i].x[X]))){
+				if (atom[i].x[X] * atom[i].v[X] > 0){//ï«Ç…å¸Ç©Ç¡ÇƒÇ∑Ç∑ÇÒÇ≈Ç¢ÇÈÇ∆Ç´ÇÕè’ìÀ
+					atom[i].reflect[X] = ON;
+				}
+				if (atom[i].reflect[X] == ON){
+					atom[i].v[X] *= -WALL_E;
+					atom[i].reflect[X] = OFF;
+				}
+			}
+			if (((cube_spot[PLUS][Y] - ATOM_SCALE < atom[i].x[Y]) && (cube_spot[PLUS][Y] + ATOM_SCALE > atom[i].x[Y])) ||
+				((cube_spot[MINUS][Y] - ATOM_SCALE > atom[i].x[Y])) && (cube_spot[MINUS][Y] + ATOM_SCALE < atom[i].x[Y])){
+				if (atom[i].x[Y] * atom[i].v[Y] > 0){//ï«Ç…å¸Ç©Ç¡ÇƒÇ∑Ç∑ÇÒÇ≈Ç¢ÇÈÇ∆Ç´ÇÕè’ìÀ
+					atom[i].reflect[Y] = ON;
+				}
+				if (atom[i].reflect[Y] == ON){
+					atom[i].v[Y] *= -WALL_E;
+					atom[i].reflect[Y] = OFF;
+				}
+			}
+			if (((cube_spot[PLUS][Z] - ATOM_SCALE < atom[i].x[Z]) && (cube_spot[PLUS][Z] + ATOM_SCALE > atom[i].x[Z])) ||
+				((cube_spot[MINUS][Z] - ATOM_SCALE > atom[i].x[Z]) && (cube_spot[MINUS][Z] + ATOM_SCALE < atom[i].x[Z]))){
+				if (atom[i].x[Z] * atom[i].v[Z] > 0){//ï«Ç…å¸Ç©Ç¡ÇƒÇ∑Ç∑ÇÒÇ≈Ç¢ÇÈÇ∆Ç´ÇÕè’ìÀ
+					atom[i].reflect[Z] = ON;
+				}
+				if (atom[i].reflect[Z] == ON){
+					atom[i].v[Z] *= -WALL_E;
+					atom[i].reflect[Z] = OFF;
+				}
+			}
+			Correct_Spot_Wall(atom[i].x);
+		}
+		else if (atom[i].flag[0] == OUT){
+			//printf("OUT%d\n",i);
+			/*î†ÇÃì‡ïîÇ…Ç†ÇÈÇ©îªíË*/
+			if (((cube_spot[PLUS][X] - ATOM_SCALE> atom[i].x[X]) && (cube_spot[MINUS][X] + ATOM_SCALE < atom[i].x[X])) &&
+				((cube_spot[PLUS][Y] - ATOM_SCALE> atom[i].x[Y]) && (cube_spot[MINUS][Y] + ATOM_SCALE < atom[i].x[Y])) &&
+				((cube_spot[PLUS][Z] - ATOM_SCALE> atom[i].x[Z]) && (cube_spot[MINUS][Z] + ATOM_SCALE < atom[i].x[Z]))){
+				atom[i].flag[0] = IN;
+				//printf("IN_TO\n");
+			}
+		}
+	}
+}
+
 double Spot_distance_3d(double spot1[], double spot2[]){
 	return sqrt((spot1[0] - spot2[0])*(spot1[0] - spot2[0]) + (spot1[1] - spot2[1])*(spot1[1] - spot2[1]) + (spot1[2] - spot2[2])*(spot1[2] - spot2[2]));
 }
@@ -164,9 +212,7 @@ void Correct_Spot(double Spot1[], double Spot2[], double distance){
 	double L = Spot_distance_3d(Spot1, Spot2);
 	double xy_distance = sqrt((Spot1[0] - Spot2[0])*(Spot1[0] - Spot2[0]) + (Spot1[1] - Spot2[1])*(Spot1[1] - Spot2[1]));
 	double slope_z, slope_xy;
-	printf("iii\n");
 	if (distance > L){
-		printf("ooo\n");
 		slope_z = atan2(Spot1[2] - Spot2[2], xy_distance);
 		slope_xy = atan2(Spot1[1] - Spot2[1], Spot1[0] - Spot2[0]);
 		Spot1[2] += (distance - L)*sin(slope_z) / 2;
@@ -184,6 +230,16 @@ void Correct_Spot_Wall(double Spot[]){
 			Spot[i] = CUBE_SCALE - ATOM_SCALE;
 		}else if (-Spot[i] > CUBE_SCALE - ATOM_SCALE){
 			Spot[i] = -CUBE_SCALE + ATOM_SCALE;
+		}
+	}
+}
+void Correct_Spot_Wall2(double Spot[], double cube_spot[][3]){
+	for (int i = X; i < Z; i++){
+		if (Spot[i] > cube_spot[PLUS][i] - ATOM_SCALE){
+			Spot[i] = cube_spot[PLUS][i] - ATOM_SCALE;
+		}
+		else if (Spot[i] < cube_spot[MINUS][i] + ATOM_SCALE){
+			Spot[i] = cube_spot[MINUS][i] + ATOM_SCALE;
 		}
 	}
 }

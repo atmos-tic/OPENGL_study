@@ -1,7 +1,7 @@
 #ifndef MAXWELL_DEMON_H
 #define MAXWELL_DEMON_H
 
-#define ATOM_NUM 500
+#define ATOM_NUM 10
 
 #define ATOM_SCALE (0.1)
 #define ATOM_M (0.5)
@@ -38,7 +38,9 @@ void Draw_Cube(double scale, double spot[], double angle[], double color[]);
 void Correct_Spot(double Spot1[], double Spot2[], double distance);
 void Atom_Conflict(ATOM_MAKE atom[], int atom_num);
 void Wall_Conflict(ATOM_MAKE atom[], int atom_num);
+void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]);
 double Spot_distance_3d(double spot1[], double spot2[]);
 void Correct_Spot(double Spot1[], double Spot2[], double distance);
 void Correct_Spot_Wall(double Spot[]);
+void Correct_Spot_Wall2(double Spot[], double cube_spot[][3]);
 #endif
