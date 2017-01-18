@@ -28,6 +28,9 @@ void Atom_Apear(ATOM_MAKE atom[]){
 		atom[i].reflect[X] = ON;
 		atom[i].reflect[Y] = ON;
 		atom[i].reflect[Z] = ON;
+		atom[i].wall_collision[0] = OFF;
+		atom[i].wall_collision[1] = OFF;
+		atom[i].wall_collision[2] = OFF;
 		for (int num = 0; num < ATOM_NUM; num++){
 			atom[i].colliding[num] = OFF;
 		}
@@ -83,7 +86,12 @@ void Atom_Conflict(ATOM_MAKE atom[], int atom_num){
 				if (Spot_distance_3d(atom[i].x, atom[j].x) <= ATOM_SCALE*2){
 					if (atom[i].v[X] == atom[j].v[X] || atom[i].v[Y] == atom[j].v[Y] || atom[i].v[Z] == atom[j].v[Z]){
 						atom[i].colliding[j] = OFF;
-						Correct_Spot(atom[i].x, atom[j].x, ATOM_SCALE * 2);
+						if (atom[j].wall_collision[0] == OFF){
+							Correct_Spot(atom[i].x, atom[j].x, ATOM_SCALE * 2);
+						}
+						else{
+							Correct_Spot2(atom[i].x, atom[j].x, ATOM_SCALE * 2);
+						}
 					}
 					if (atom[i].colliding[j] == OFF){
 						Conflict_Function(atom[i].v[X], atom[j].v[X], ATOM_M, ATOM_M);
@@ -161,6 +169,7 @@ void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
 			/*ï«ïtãﬂÇ≈å¥éqÇÃîºåaÇÊÇËãﬂÇ¢Ç©îªíË*/
 			if (((cube_spot[PLUS][X] - ATOM_SCALE < atom[i].x[X]) && (cube_spot[PLUS][X] + ATOM_SCALE > atom[i].x[X])) ||
 				((cube_spot[MINUS][X] + ATOM_SCALE > atom[i].x[X]) && (cube_spot[MINUS][X] - ATOM_SCALE < atom[i].x[X]))){
+				atom[i].wall_collision[0] = ON;
 				if (atom[i].x[X] * atom[i].v[X] > 0){//ï«Ç…å¸Ç©Ç¡ÇƒÇ∑Ç∑ÇÒÇ≈Ç¢ÇÈÇ∆Ç´ÇÕè’ìÀ
 					atom[i].reflect[X] = ON;
 				}
@@ -169,8 +178,12 @@ void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
 					atom[i].reflect[X] = OFF;
 				}
 			}
+			else{
+				atom[i].wall_collision[0] = OFF;
+			}
 			if (((cube_spot[PLUS][Y] - ATOM_SCALE < atom[i].x[Y]) && (cube_spot[PLUS][Y] + ATOM_SCALE > atom[i].x[Y])) ||
 				((cube_spot[MINUS][Y] + ATOM_SCALE > atom[i].x[Y])) && (cube_spot[MINUS][Y] - ATOM_SCALE < atom[i].x[Y])){
+				atom[i].wall_collision[1] = ON;
 				if (atom[i].x[Y] * atom[i].v[Y] > 0){//ï«Ç…å¸Ç©Ç¡ÇƒÇ∑Ç∑ÇÒÇ≈Ç¢ÇÈÇ∆Ç´ÇÕè’ìÀ
 					atom[i].reflect[Y] = ON;
 				}
@@ -179,8 +192,12 @@ void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
 					atom[i].reflect[Y] = OFF;
 				}
 			}
+			else{
+				atom[i].wall_collision[1] = OFF;
+			}
 			if (((cube_spot[PLUS][Z] - ATOM_SCALE < atom[i].x[Z]) && (cube_spot[PLUS][Z] + ATOM_SCALE > atom[i].x[Z])) ||
 				((cube_spot[MINUS][Z] + ATOM_SCALE > atom[i].x[Z]) && (cube_spot[MINUS][Z] - ATOM_SCALE < atom[i].x[Z]))){
+				atom[i].wall_collision[2] = ON;
 				if (atom[i].x[Z] * atom[i].v[Z] > 0){//ï«Ç…å¸Ç©Ç¡ÇƒÇ∑Ç∑ÇÒÇ≈Ç¢ÇÈÇ∆Ç´ÇÕè’ìÀ
 					atom[i].reflect[Z] = ON;
 				}
@@ -188,6 +205,9 @@ void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
 					atom[i].v[Z] *= -WALL_E;
 					atom[i].reflect[Z] = OFF;
 				}
+			}
+			else{
+				atom[i].wall_collision[2] = OFF;
 			}
 			Correct_Spot_Wall2(atom[i].x, cube_spot);
 		}
@@ -223,7 +243,18 @@ void Correct_Spot(double Spot1[], double Spot2[], double distance){
 		Spot2[0] -= (distance - L)*cos(slope_z) * sin(slope_xy) / 2;
 	}
 }
-
+void Correct_Spot2(double Spot1[], double Spot2[], double distance){
+	double L = Spot_distance_3d(Spot1, Spot2);
+	double xy_distance = sqrt((Spot1[0] - Spot2[0])*(Spot1[0] - Spot2[0]) + (Spot1[1] - Spot2[1])*(Spot1[1] - Spot2[1]));
+	double slope_z, slope_xy;
+	if (distance > L){
+		slope_z = atan2(Spot1[2] - Spot2[2], xy_distance);
+		slope_xy = atan2(Spot1[1] - Spot2[1], Spot1[0] - Spot2[0]);
+		Spot1[2] += (distance - L)*sin(slope_z);
+		Spot1[1] += (distance - L)*cos(slope_z) * cos(slope_xy);
+		Spot1[0] += (distance - L)*cos(slope_z) * sin(slope_xy);
+	}
+}
 void Correct_Spot_Wall(double Spot[]){
 	for (int i = 0; i < 3; i++){
 		if (Spot[i] > CUBE_SCALE - ATOM_SCALE){
@@ -234,7 +265,7 @@ void Correct_Spot_Wall(double Spot[]){
 	}
 }
 void Correct_Spot_Wall2(double Spot[], double cube_spot[][3]){
-	for (int i = X; i < Z; i++){
+	for (int i = X; i < Z+1; i++){
 		if (Spot[i] > cube_spot[PLUS][i] - ATOM_SCALE){
 			Spot[i] = cube_spot[PLUS][i] - ATOM_SCALE;
 		}

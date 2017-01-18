@@ -1,7 +1,7 @@
 #ifndef MAXWELL_DEMON_H
 #define MAXWELL_DEMON_H
 
-#define ATOM_NUM 50
+#define ATOM_NUM 100
 
 #define ATOM_SCALE (0.1)
 #define ATOM_M (0.5)
@@ -26,7 +26,7 @@ typedef struct atom{
 	double v[3];
 	double flag[1];
 	double reflect[3];//âΩèdÇ…Ç‡ï«Ç…îΩéÀÇ∑ÇÈÇÃÇñhÇÆ
-	double collision[ATOM_NUM];
+	double wall_collision[3];
 	bool colliding[ATOM_NUM];
 }ATOM_MAKE;
 
@@ -41,6 +41,7 @@ void Wall_Conflict(ATOM_MAKE atom[], int atom_num);
 void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]);
 double Spot_distance_3d(double spot1[], double spot2[]);
 void Correct_Spot(double Spot1[], double Spot2[], double distance);
+void Correct_Spot2(double Spot1[], double Spot2[], double distance);
 void Correct_Spot_Wall(double Spot[]);
 void Correct_Spot_Wall2(double Spot[], double cube_spot[][3]);
 #endif

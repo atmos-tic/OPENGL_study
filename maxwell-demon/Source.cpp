@@ -32,14 +32,76 @@ double atom_color[ATOM_NUM][3] = { {1.0} };
 
 ATOM_MAKE Atom[ATOM_NUM];
 
-
+int move_task = 0;
 void ModelDarw(void){
-	static int time_counter = 0;
-
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//設定した背景の色ので描写バッファをクリア
 	Draw_Cube(CUBE_SCALE, cube_spot, cube_angle, cube_color);
 	Draw_TeaPot(TEAPOT_SCALE, teapot_spot, teapot_angle, teapot_color);	
+	Draw_Atom(ATOM_SCALE, Atom, now_atom_num, atom_color);
+	glutSwapBuffers();
+}
+
+void Object_Move(double x, double y, double z){
+	static double dx[3];
+	dx[0] = x;
+	dx[1] = y;
+	dx[2] = z;
+	Translate(wall_spot[0], dx);
+	Translate(wall_spot[1], dx);
+	Translate(cube_spot, dx);
+	Translate(teapot_spot, dx);
+
+}
+void ModelMove(void){
+	static int time_counter = 0;
+	printf("move%d\n", move_task);
+	switch (move_task){
+	case 0:
+		if (teapot_flag == OFF){
+			move_task++;
+		}
+		break;
+	case 1:
+		if (teapot_angle[3] <= 0){
+			move_task++;
+		}
+		break;
+	case 2:
+		Object_Move(0.05, -0.01, 0.0);
+		if (cube_spot[0] >= 4.0){
+			move_task++;
+		}
+		break;
+	case 3:
+		Object_Move(0.0, +0.01, -0.05);
+		if (cube_spot[2] <= -4.0){
+			move_task++;
+		}
+		break;
+	case 4:
+		Object_Move(-0.05, -0.01, 0.0);
+		if (cube_spot[0] <= -4.0){
+			move_task++;
+		}
+		break;
+	case 5:
+		Object_Move(0.0, 0.01, 0.05);
+		if (cube_spot[2] >= 4.0){
+			move_task=2;
+		}
+		break;
+	}
+	Atom_Conflict(Atom, now_atom_num); 
+	Wall_Conflict2(Atom, now_atom_num, wall_spot);
+	for (int i = 0; i < now_atom_num; i++){
+		if (Atom[i].x[Y] > wall_spot[1][Y] + ATOM_SCALE){
+			Atom[i].v[Y] -= GGGGG*dT;
+		}
+		Atom[i].x[X] += Atom[i].v[X]*dT;
+		Atom[i].x[Y] += Atom[i].v[Y]*dT;
+		Atom[i].x[Z] += Atom[i].v[Z]*dT;
+	}
 	/*原子の生成*/
 	if (teapot_angle[3] < 45.0 && teapot_flag == ON){
 		teapot_angle[3] += 0.05;
@@ -57,36 +119,6 @@ void ModelDarw(void){
 	}
 	if (now_atom_num >= ATOM_NUM && teapot_angle[3] >= 0 && teapot_flag == OFF){
 		teapot_angle[3] -= 0.05;
-	}
-	Draw_Atom(ATOM_SCALE, Atom, now_atom_num, atom_color);
-	glutSwapBuffers();
-}
-
-void Object_Move(void){
-	static double dx[3];
-	dx[0] = +0.01;
-	dx[1] = 0.0;
-	dx[2] = 0.0;
-	Translate(wall_spot[0], dx);
-	Translate(wall_spot[1], dx);
-	Translate(cube_spot, dx);
-	Translate(teapot_spot, dx);
-
-}
-void ModelMove(void){
-	if (teapot_flag == OFF && teapot_angle[3] <= 0 && cube_spot[0] <= 4.0){
-		printf("move\n");
-		Object_Move();
-	}
-	Atom_Conflict(Atom, now_atom_num); 
-	Wall_Conflict2(Atom, now_atom_num, wall_spot);
-	for (int i = 0; i < now_atom_num; i++){
-		if (Atom[i].x[Y] > wall_spot[1][Y] + ATOM_SCALE){
-			Atom[i].v[Y] -= GGGGG*dT;
-		}
-		Atom[i].x[X] += Atom[i].v[X]*dT;
-		Atom[i].x[Y] += Atom[i].v[Y]*dT;
-		Atom[i].x[Z] += Atom[i].v[Z]*dT;
 	}
 	ModelDarw();
 }
