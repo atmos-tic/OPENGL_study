@@ -14,6 +14,7 @@ int MouseX = 640, MouseY = 250;
 int MouseX_M = 1.0, MouseY_M = 1.0;
 int WinW = 1, WinH = 1;
 int now_atom_num = 0; 
+double view_vertical = 1.0, view_horizon = 1.0, zoom = 15.0;
 float size = 1.0;
 double x_R = 0, x_B = 2.0;
 double V_R = 0, V_B = -1.0, V_save = 0;
@@ -49,6 +50,7 @@ unsigned int __stdcall thread_func(void *dmy)
 			//Correct_Spot_Wall2(Atom[i].x, wall_spot);
 		//}
 	}
+	//printf("aaaa\n");
 	return 0;
 }
 
@@ -77,9 +79,9 @@ void Object_Move(double x, double y, double z){
 
 void ModelMove(void){
 	static int time_counter = 0;
-	printf("move%d\n", move_task);
+	//printf("move%d\n", move_task);
 	_beginthreadex(NULL, 0, &thread_func, NULL, 0, NULL);
-	printf("thread\n");
+	//printf("thread\n");
 	switch (move_task){
 	case 0:
 		teapot_angle[3] += 0.05;
@@ -93,7 +95,7 @@ void ModelMove(void){
 		if (time_counter > APEAR_INTERVAL){
 			now_atom_num = (now_atom_num + 1 < ATOM_NUM) ? now_atom_num + 1 : ATOM_NUM;
 			time_counter = 0;
-			printf("now_atom_num%d\n", now_atom_num);
+			//printf("now_atom_num%d\n", now_atom_num);
 		}
 		if (teapot_angle[3] > 45.0){
 			move_task++;
@@ -103,7 +105,7 @@ void ModelMove(void){
 		if (time_counter > APEAR_INTERVAL){
 			now_atom_num = (now_atom_num + 1 < ATOM_NUM) ? now_atom_num + 1 : ATOM_NUM;
 			time_counter = 0;
-			printf("now_atom_num%d\n", now_atom_num);
+			//printf("now_atom_num%d\n", now_atom_num);
 		}
 		if (now_atom_num >= ATOM_NUM){
 			move_task++;
@@ -164,9 +166,23 @@ void ModelMove(void){
 		}
 		break;
 	}
-	printf("thread1\n");
+	Atom_Conflict(Atom, now_atom_num);
+	Wall_Conflict2(Atom, now_atom_num, wall_spot);
+	//printf("bbbbb\n");
+	/*Atom_Conflict(Atom, now_atom_num);
+	Wall_Conflict2(Atom, now_atom_num, wall_spot);
+	for (int i = 0; i < now_atom_num; i++){
+		if (Atom[i].x[Y] > wall_spot[1][Y] + ATOM_SCALE){
+			Atom[i].v[Y] -= GGGGG*dT;
+		}
+		Atom[i].x[X] += Atom[i].v[X] * dT;
+		Atom[i].x[Y] += Atom[i].v[Y] * dT;
+		Atom[i].x[Z] += Atom[i].v[Z] * dT;
+		//if (Atom[i].flag[0] == IN){
+		//Correct_Spot_Wall2(Atom[i].x, wall_spot);
+		//}
+	}*/
 	//_endthread();
-	printf("thread2\n");
 	ModelDarw();
 }
 void timer(int value){
@@ -182,7 +198,8 @@ void reshape(int w, int h){
 	gluPerspective(40.0, (float)w / (float)h, 1.0, 50.0); //投資法射影の視体積を設定
 	glMatrixMode(GL_MODELVIEW);			//モデル変換モードに設定	
 	glLoadIdentity();
-	gluLookAt(((float)MouseX_M - ((float)WinW / 2.0)) / 1280.0*50.0, ((float)MouseY_M - ((float)WinH / 2.0)) / 1024.0*50.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); //視体積の位置を設定
+	//gluLookAt(((float)MouseX_M - ((float)WinW / 2.0)) / 1280.0*50.0, ((float)MouseY_M - ((float)WinH / 2.0)) / 1024.0*50.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); //視体積の位置を設定
+	gluLookAt(view_horizon, view_vertical, zoom, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); //視体積の位置を設定
 }
 
 void mouse(int button, int state, int x, int y){
@@ -212,6 +229,43 @@ void mouse(int button, int state, int x, int y){
 	}
 }
 
+void keyboad(unsigned char c, int x, int y){
+	if (c == '2'){
+		printf("2\n");
+		view_vertical += 1.0;
+		reshape(WinW, WinH);
+		glutPostRedisplay();
+	}
+	if (c == '8'){
+		printf("8\n");
+		view_vertical -= 1.0;
+		reshape(WinW, WinH);
+		glutPostRedisplay();
+	}
+	if (c == '6'){
+		printf("6\n");
+		view_horizon += 1.0;
+		reshape(WinW, WinH);
+		glutPostRedisplay();
+	}
+	if (c == '4'){
+		printf("4\n");
+		view_horizon -= 1.0;
+		reshape(WinW, WinH);
+		glutPostRedisplay();
+	}
+	if (c == '1'){
+		zoom += 1.0;
+		reshape(WinW, WinH);
+		glutPostRedisplay();
+	}
+	if (c == '3'){
+		zoom -= 1.0;
+		reshape(WinW, WinH);
+		glutPostRedisplay();
+	}
+}
+
 int main(int argc, char** argv)			//argcは実行時の引数の数、argvはその実態配列
 {
 	glutInit(&argc, argv);				//OpenGLとGLUTの初期化
@@ -224,6 +278,7 @@ int main(int argc, char** argv)			//argcは実行時の引数の数、argvはその実態配列
 	glutDisplayFunc(ModelDarw);			//ウィンドウズないに描画する関数のポインタを引数に指定
 	glutReshapeFunc(reshape);
 	glutMouseFunc(mouse);
+	glutKeyboardFunc(keyboad);
 //	glutIdleFunc(ModelMove);
 	glutTimerFunc(10, timer, 1);
 	glutMainLoop();						//無限ループ。ひたすらユーザーからのイベントを待つ

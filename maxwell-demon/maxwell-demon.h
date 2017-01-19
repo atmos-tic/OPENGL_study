@@ -1,12 +1,12 @@
 #ifndef MAXWELL_DEMON_H
 #define MAXWELL_DEMON_H
 
-#define ATOM_NUM 1000
+#define ATOM_NUM 10
 
 #define ATOM_SCALE (0.1)
 #define ATOM_M (0.5)
-#define dT (0.0005)
-#define APEAR_INTERVAL (20)
+#define dT (0.001)
+#define APEAR_INTERVAL (10)
 #define WALL_E (0.700)
 #define ATOM_E (0.400)
 #define GGGGG (980)
