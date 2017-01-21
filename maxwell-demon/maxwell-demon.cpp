@@ -1,5 +1,7 @@
 #include <stdio.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
+#include <process.h>
 #include <glut.h>
 #include "maxwell-demon.h"
 #include "main.h"
@@ -162,13 +164,13 @@ void Wall_Conflict(ATOM_MAKE atom[], int atom_num){
 	}	
 }
 
-void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
+void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double wall_spot[][3]){
 	for (int i = 0; i < atom_num; i++){
 		if (atom[i].flag[0] == IN){
 			//printf("IN%d\n",i);
 			/*壁付近で原子の半径より近いか判定*/
-			if (((cube_spot[PLUS][X] - ATOM_SCALE < atom[i].x[X]) && (cube_spot[PLUS][X] + ATOM_SCALE > atom[i].x[X])) ||
-				((cube_spot[MINUS][X] + ATOM_SCALE > atom[i].x[X]) && (cube_spot[MINUS][X] - ATOM_SCALE < atom[i].x[X]))){
+			if (((wall_spot[PLUS][X] - ATOM_SCALE < atom[i].x[X]) && (wall_spot[PLUS][X] + ATOM_SCALE > atom[i].x[X])) ||
+				((wall_spot[MINUS][X] + ATOM_SCALE > atom[i].x[X]) && (wall_spot[MINUS][X] - ATOM_SCALE < atom[i].x[X]))){
 				atom[i].wall_collision[0] = ON;
 				if (atom[i].x[X] * atom[i].v[X] > 0){//壁に向かってすすんでいるときは衝突
 					atom[i].reflect[X] = ON;
@@ -181,8 +183,8 @@ void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
 			else{
 				atom[i].wall_collision[0] = OFF;
 			}
-			if (((cube_spot[PLUS][Y] - ATOM_SCALE < atom[i].x[Y]) && (cube_spot[PLUS][Y] + ATOM_SCALE > atom[i].x[Y])) ||
-				((cube_spot[MINUS][Y] + ATOM_SCALE > atom[i].x[Y])) && (cube_spot[MINUS][Y] - ATOM_SCALE < atom[i].x[Y])){
+			if (((wall_spot[PLUS][Y] - ATOM_SCALE < atom[i].x[Y]) && (wall_spot[PLUS][Y] + ATOM_SCALE > atom[i].x[Y])) ||
+				((wall_spot[MINUS][Y] + ATOM_SCALE > atom[i].x[Y])) && (wall_spot[MINUS][Y] - ATOM_SCALE < atom[i].x[Y])){
 				atom[i].wall_collision[1] = ON;
 				if (atom[i].x[Y] * atom[i].v[Y] > 0){//壁に向かってすすんでいるときは衝突
 					atom[i].reflect[Y] = ON;
@@ -195,8 +197,8 @@ void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
 			else{
 				atom[i].wall_collision[1] = OFF;
 			}
-			if (((cube_spot[PLUS][Z] - ATOM_SCALE < atom[i].x[Z]) && (cube_spot[PLUS][Z] + ATOM_SCALE > atom[i].x[Z])) ||
-				((cube_spot[MINUS][Z] + ATOM_SCALE > atom[i].x[Z]) && (cube_spot[MINUS][Z] - ATOM_SCALE < atom[i].x[Z]))){
+			if (((wall_spot[PLUS][Z] - ATOM_SCALE < atom[i].x[Z]) && (wall_spot[PLUS][Z] + ATOM_SCALE > atom[i].x[Z])) ||
+				((wall_spot[MINUS][Z] + ATOM_SCALE > atom[i].x[Z]) && (wall_spot[MINUS][Z] - ATOM_SCALE < atom[i].x[Z]))){
 				atom[i].wall_collision[2] = ON;
 				if (atom[i].x[Z] * atom[i].v[Z] > 0){//壁に向かってすすんでいるときは衝突
 					atom[i].reflect[Z] = ON;
@@ -209,20 +211,135 @@ void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]){
 			else{
 				atom[i].wall_collision[2] = OFF;
 			}
-			Correct_Spot_Wall2(atom[i].x, cube_spot);
+			Correct_Spot_Wall2(atom[i].x, wall_spot);
 		}
 		else if (atom[i].flag[0] == OUT){
 			//printf("OUT%d\n",i);
 			/*箱の内部にあるか判定*/
-			if (((cube_spot[PLUS][X] - ATOM_SCALE> atom[i].x[X]) && (cube_spot[MINUS][X] + ATOM_SCALE < atom[i].x[X])) &&
-				((cube_spot[PLUS][Y] - ATOM_SCALE> atom[i].x[Y]) && (cube_spot[MINUS][Y] + ATOM_SCALE < atom[i].x[Y])) &&
-				((cube_spot[PLUS][Z] - ATOM_SCALE> atom[i].x[Z]) && (cube_spot[MINUS][Z] + ATOM_SCALE < atom[i].x[Z]))){
+			if (((wall_spot[PLUS][X] - ATOM_SCALE> atom[i].x[X]) && (wall_spot[MINUS][X] + ATOM_SCALE < atom[i].x[X])) &&
+				((wall_spot[PLUS][Y] - ATOM_SCALE> atom[i].x[Y]) && (wall_spot[MINUS][Y] + ATOM_SCALE < atom[i].x[Y])) &&
+				((wall_spot[PLUS][Z] - ATOM_SCALE> atom[i].x[Z]) && (wall_spot[MINUS][Z] + ATOM_SCALE < atom[i].x[Z]))){
 				atom[i].flag[0] = IN;
 				//printf("IN_TO\n");
 			}
 		}
 	}
 }
+
+void Wall_Conflict3(ATOM_MAKE atom[], int atom_num, double wall_spot[][3], double cube_spot[], double cube_angle[]){
+	double angle[3];
+	angle[X] = -cube_angle[3] * cube_angle[X] * M_PI / 180;
+	angle[Y] = -cube_angle[3] * cube_angle[Y] * M_PI / 180;
+	angle[Z] = -cube_angle[3] * cube_angle[Z] * M_PI / 180;
+	for (int i = 0; i < atom_num; i++){
+		Spot_Rotate(atom[i].virtual_x, atom[i].x, cube_spot, angle);
+		Spot_Rotate(atom[i].virtual_v, atom[i].v, cube_spot, angle);
+	}
+	for (int i = 0; i < atom_num; i++){
+		if (atom[i].flag[0] == IN){
+			//printf("IN%d\n",i);
+			/*壁付近で原子の半径より近いか判定*/
+			if (((wall_spot[PLUS][X] - ATOM_SCALE < atom[i].virtual_x[X]) && (wall_spot[PLUS][X] + ATOM_SCALE > atom[i].virtual_x[X])) ||
+				((wall_spot[MINUS][X] + ATOM_SCALE > atom[i].virtual_x[X]) && (wall_spot[MINUS][X] - ATOM_SCALE < atom[i].virtual_x[X]))){
+				atom[i].wall_collision[0] = ON;
+				if (atom[i].virtual_x[X] * atom[i].virtual_v[X] > 0){//壁に向かってすすんでいるときは衝突
+					atom[i].reflect[X] = ON;
+				}
+				if (atom[i].reflect[X] == ON){
+					atom[i].virtual_v[X] *= -WALL_E;
+					atom[i].reflect[X] = OFF;
+				}
+			}
+			else{
+				atom[i].wall_collision[0] = OFF;
+			}
+			if (((wall_spot[PLUS][Y] - ATOM_SCALE < atom[i].virtual_x[Y]) && (wall_spot[PLUS][Y] + ATOM_SCALE > atom[i].virtual_x[Y])) ||
+				((wall_spot[MINUS][Y] + ATOM_SCALE > atom[i].virtual_x[Y])) && (wall_spot[MINUS][Y] - ATOM_SCALE < atom[i].virtual_x[Y])){
+				atom[i].wall_collision[1] = ON;
+				if (atom[i].virtual_x[Y] * atom[i].virtual_v[Y] > 0){//壁に向かってすすんでいるときは衝突
+					atom[i].reflect[Y] = ON;
+				}
+				if (atom[i].reflect[Y] == ON){
+					atom[i].virtual_v[Y] *= -WALL_E;
+					atom[i].reflect[Y] = OFF;
+				}
+			}
+			else{
+				atom[i].wall_collision[1] = OFF;
+			}
+			if (((wall_spot[PLUS][Z] - ATOM_SCALE < atom[i].virtual_x[Z]) && (wall_spot[PLUS][Z] + ATOM_SCALE > atom[i].virtual_x[Z])) ||
+				((wall_spot[MINUS][Z] + ATOM_SCALE > atom[i].virtual_x[Z]) && (wall_spot[MINUS][Z] - ATOM_SCALE < atom[i].virtual_x[Z]))){
+				atom[i].wall_collision[2] = ON;
+				if (atom[i].x[Z] * atom[i].virtual_v[Z] > 0){//壁に向かってすすんでいるときは衝突
+					atom[i].reflect[Z] = ON;
+				}
+				if (atom[i].reflect[Z] == ON){
+					atom[i].virtual_v[Z] *= -WALL_E;
+					atom[i].reflect[Z] = OFF;
+				}
+			}
+			else{
+				atom[i].wall_collision[2] = OFF;
+			}
+			Correct_Spot_Wall2(atom[i].virtual_x, wall_spot);
+		}
+		else if (atom[i].flag[0] == OUT){
+			//printf("OUT%d\n",i);
+			/*箱の内部にあるか判定*/
+			if (((wall_spot[PLUS][X] - ATOM_SCALE> atom[i].x[X]) && (wall_spot[MINUS][X] + ATOM_SCALE < atom[i].x[X])) &&
+				((wall_spot[PLUS][Y] - ATOM_SCALE> atom[i].x[Y]) && (wall_spot[MINUS][Y] + ATOM_SCALE < atom[i].x[Y])) &&
+				((wall_spot[PLUS][Z] - ATOM_SCALE> atom[i].x[Z]) && (wall_spot[MINUS][Z] + ATOM_SCALE < atom[i].x[Z]))){
+				atom[i].flag[0] = IN;
+				//printf("IN_TO\n");
+			}
+		}
+
+		angle[X] = cube_angle[3] * cube_angle[X] * M_PI / 180;
+		angle[Y] = cube_angle[3] * cube_angle[Y] * M_PI / 180;
+		angle[Z] = cube_angle[3] * cube_angle[Z] * M_PI / 180;
+		for (int i = 0; i < atom_num; i++){
+			Spot_Rotate(atom[i].x, atom[i].virtual_x, cube_spot, angle);
+			Spot_Rotate(atom[i].v, atom[i].virtual_v, cube_spot, angle);
+		}
+	}
+}
+
+void Wall_Conflict4(ATOM_MAKE atom[], int atom_num, double wall_spot[][3], double cube_spot[], double cube_angle[]){
+	double angle[3];
+	angle[X] = -cube_angle[3] * cube_angle[X] * M_PI / 180;
+	angle[Y] = -cube_angle[3] * cube_angle[Y] * M_PI / 180;
+	angle[Z] = -cube_angle[3] * cube_angle[Z] * M_PI / 180;
+	for (int i = 0; i < atom_num; i++){
+		Spot_Rotate(atom[i].virtual_x, atom[i].x, cube_spot, angle);
+		Spot_Rotate(atom[i].virtual_v, atom[i].v, cube_spot, angle);
+	}
+	for (int i = 0; i < atom_num; i++){
+		if (atom[i].flag[0] == IN){
+			_beginthreadex(NULL, 0, &thread_func1, NULL, 0, NULL);
+			_beginthreadex(NULL, 0, &thread_func2, NULL, 0, NULL);
+			_beginthreadex(NULL, 0, &thread_func3, NULL, 0, NULL);
+		}
+		else if (atom[i].flag[0] == OUT){
+			//printf("OUT%d\n",i);
+			/*箱の内部にあるか判定*/
+			if (((wall_spot[PLUS][X] - ATOM_SCALE> atom[i].x[X]) && (wall_spot[MINUS][X] + ATOM_SCALE < atom[i].x[X])) &&
+				((wall_spot[PLUS][Y] - ATOM_SCALE> atom[i].x[Y]) && (wall_spot[MINUS][Y] + ATOM_SCALE < atom[i].x[Y])) &&
+				((wall_spot[PLUS][Z] - ATOM_SCALE> atom[i].x[Z]) && (wall_spot[MINUS][Z] + ATOM_SCALE < atom[i].x[Z]))){
+				atom[i].flag[0] = IN;
+				//printf("IN_TO\n");
+			}
+		}
+
+		angle[X] = cube_angle[3] * cube_angle[X] * M_PI / 180;
+		angle[Y] = cube_angle[3] * cube_angle[Y] * M_PI / 180;
+		angle[Z] = cube_angle[3] * cube_angle[Z] * M_PI / 180;
+		for (int i = 0; i < atom_num; i++){
+			Spot_Rotate(atom[i].x, atom[i].virtual_x, cube_spot, angle);
+			Spot_Rotate(atom[i].v, atom[i].virtual_v, cube_spot, angle);
+		}
+	}
+}
+
 
 double Spot_distance_3d(double spot1[], double spot2[]){
 	return sqrt((spot1[0] - spot2[0])*(spot1[0] - spot2[0]) + (spot1[1] - spot2[1])*(spot1[1] - spot2[1]) + (spot1[2] - spot2[2])*(spot1[2] - spot2[2]));

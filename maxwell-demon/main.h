@@ -6,4 +6,8 @@
 #define ON	(1)
 #define OFF (0)
 
+unsigned int __stdcall thread_func1(void *dmy);
+unsigned int __stdcall thread_func2(void *dmy);
+unsigned int __stdcall thread_func3(void *dmy);
+
 #endif

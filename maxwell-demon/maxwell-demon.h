@@ -1,7 +1,7 @@
 #ifndef MAXWELL_DEMON_H
 #define MAXWELL_DEMON_H
 
-#define ATOM_NUM 10
+#define ATOM_NUM 300
 
 #define ATOM_SCALE (0.1)
 #define ATOM_M (0.5)
@@ -9,7 +9,7 @@
 #define APEAR_INTERVAL (10)
 #define WALL_E (0.700)
 #define ATOM_E (0.400)
-#define GGGGG (980)
+#define GGGGG (500)
 #define CUBE_SCALE (2.0)
 #define TEAPOT_SCALE (1.0)
 
@@ -23,7 +23,9 @@
 
 typedef struct atom{
 	double x[3];
+	double virtual_x[3];
 	double v[3];
+	double virtual_v[3];
 	double flag[1];
 	double reflect[3];//âΩèdÇ…Ç‡ï«Ç…îΩéÀÇ∑ÇÈÇÃÇñhÇÆ
 	double wall_collision[3];
@@ -39,9 +41,12 @@ void Correct_Spot(double Spot1[], double Spot2[], double distance);
 void Atom_Conflict(ATOM_MAKE atom[], int atom_num);
 void Wall_Conflict(ATOM_MAKE atom[], int atom_num);
 void Wall_Conflict2(ATOM_MAKE atom[], int atom_num, double cube_spot[][3]);
+void Wall_Conflict3(ATOM_MAKE atom[], int atom_num, double wall_spot[][3], double cube_spot[], double cube_angle[]);
+void Wall_Conflict4(ATOM_MAKE atom[], int atom_num, double wall_spot[][3], double cube_spot[], double cube_angle[]);
 double Spot_distance_3d(double spot1[], double spot2[]);
 void Correct_Spot(double Spot1[], double Spot2[], double distance);
 void Correct_Spot2(double Spot1[], double Spot2[], double distance);
 void Correct_Spot_Wall(double Spot[]);
-void Correct_Spot_Wall2(double Spot[], double cube_spot[][3]);
+void Correct_Spot_Wall2(double Spot[], double wall_spot[][3]);
+
 #endif
