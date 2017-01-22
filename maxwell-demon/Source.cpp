@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <process.h>
+#include <string.h>
 #include <glut.h>
 #include "maxwell-demon.h"
 #include "main.h"
@@ -34,101 +36,95 @@ ATOM_MAKE Atom[ATOM_NUM];
 
 int move_task = 0;
 
-unsigned int __stdcall thread_func(void *dmy)
+unsigned int __stdcall thread_AD_func(void *dmy)
 {
-	Atom_Conflict(Atom, now_atom_num);
-	/*Wall_Conflict2(Atom, now_atom_num, wall_spot);
-  	for (int i = 0; i < now_atom_num; i++){
-		if (Atom[i].x[Y] > wall_spot[1][Y] + ATOM_SCALE){
-			Atom[i].v[Y] -= GGGGG*dT;
-		}
-		Atom[i].x[X] += Atom[i].v[X] * dT;
-		Atom[i].x[Y] += Atom[i].v[Y] * dT;
-		Atom[i].x[Z] += Atom[i].v[Z] * dT;
-	}*/
-	//Wall_Conflict3(Atom, now_atom_num, wall_spot, cube_spot, cube_angle);
-	//printf("aaaa\n");
-	printf("0\n");
+	for (int i = 0; i < now_atom_num; i++){
+		Atom[i].digital_x = Digital_Atom_Spot(Atom[i].x);
+	}
+	_endthreadex(0);
 	return 0;
 }
 
-unsigned int __stdcall thread_func1(void *dmy)
+unsigned int __stdcall thread_wall_func1(void *a)
 {
-	for (int i = 0; i < now_atom_num; i++){
-		//printf("IN%d\n",i);
-		if (Atom[i].flag[0] == IN){
-			/*壁付近で原子の半径より近いか判定*/
-			if (((wall_spot[0][X] - ATOM_SCALE < Atom[i].virtual_x[X]) && (wall_spot[0][X] + ATOM_SCALE > Atom[i].virtual_x[X])) ||
-				((wall_spot[1][X] + ATOM_SCALE > Atom[i].virtual_x[X]) && (wall_spot[1][X] - ATOM_SCALE < Atom[i].virtual_x[X]))){
-				Atom[i].wall_collision[0] = ON;
-				if (Atom[i].virtual_x[X] * Atom[i].virtual_v[X] > 0){//壁に向かってすすんでいるときは衝突
-					Atom[i].reflect[X] = ON;
-				}
-				if (Atom[i].reflect[X] == ON){
-					Atom[i].virtual_v[X] *= -WALL_E;
-					Atom[i].reflect[X] = OFF;
+	AD_ATOM_MAKE atom = (AD_ATOM_MAKE)a;
+	double angle[2][3];
+	angle[0][X] = -cube_angle[3] * cube_angle[X] * M_PI / 180;
+	angle[0][Y] = -cube_angle[3] * cube_angle[Y] * M_PI / 180;
+	angle[0][Z] = -cube_angle[3] * cube_angle[Z] * M_PI / 180;
+	angle[1][X] = cube_angle[3] * cube_angle[X] * M_PI / 180;
+	angle[1][Y] = cube_angle[3] * cube_angle[Y] * M_PI / 180;
+	angle[1][Z] = cube_angle[3] * cube_angle[Z] * M_PI / 180;
+	Spot_Rotate(Atom[atom->atnum].virtual_x, Atom[atom->atnum].x, cube_spot, angle[0]);
+	Spot_Rotate(Atom[atom->atnum].virtual_v, Atom[atom->atnum].v, cube_spot, angle[0]);
+	if (atom->flag[0] == IN){
+		for (int xyz = X; xyz <= Z; xyz++){
+
+			if (((wall_spot[0][xyz] - ATOM_SCALE < Atom[atom->atnum].virtual_x[xyz]) && (wall_spot[0][xyz] + ATOM_SCALE > Atom[atom->atnum].virtual_x[xyz])) ||
+				((wall_spot[1][xyz] + ATOM_SCALE > Atom[atom->atnum].virtual_x[xyz]) && (wall_spot[1][xyz] - ATOM_SCALE < Atom[atom->atnum].virtual_x[xyz]))){
+				if (Atom[atom->atnum].virtual_x[xyz] * Atom[atom->atnum].virtual_v[xyz] > 0){//壁に向かってすすんでいるときは衝突
+					Atom[atom->atnum].virtual_v[xyz] *= -WALL_E;
 				}
 			}
-			else{
-				Atom[i].wall_collision[X] = OFF;
-			}
+
 		}
+		Correct_Spot_Wall2(Atom[atom->atnum].virtual_x, wall_spot);
 	}
-	printf("1\n");
+	Spot_Rotate(Atom[atom->atnum].x, Atom[atom->atnum].virtual_x, cube_spot, angle[1]);
+	Spot_Rotate(Atom[atom->atnum].v, Atom[atom->atnum].virtual_v, cube_spot, angle[1]);
+	_endthreadex(0);
+	return 0;
+}
+unsigned int __stdcall thread_wall_func2(void *a)
+{
+	AD_ATOM_MAKE atom = (AD_ATOM_MAKE)a;
+	if (atom->flag[0] == IN){
+		for (int xyz = X; xyz <= Z; xyz++){
+
+			if (((wall_spot[0][xyz] - ATOM_SCALE < Atom[atom->atnum].x[xyz]) && (wall_spot[0][xyz] + ATOM_SCALE > Atom[atom->atnum].x[xyz])) ||
+				((wall_spot[1][xyz] + ATOM_SCALE > Atom[atom->atnum].x[xyz]) && (wall_spot[1][xyz] - ATOM_SCALE < Atom[atom->atnum].x[xyz]))){
+				if (Atom[atom->atnum].x[xyz] * Atom[atom->atnum].v[xyz] > 0){//壁に向かってすすんでいるときは衝突
+					Atom[atom->atnum].v[xyz] *= -WALL_E;
+				}
+			}
+
+		}
+		Correct_Spot_Wall2(Atom[atom->atnum].x, wall_spot);
+	}
+	_endthreadex(0);
+	return 0;
+}
+unsigned int __stdcall thread_wall_func3(void *a)
+{
+	AD_ATOM_MAKE atom = (AD_ATOM_MAKE)a;
+	double angle[2][3];
+	angle[0][X] = -cube_angle[3] * cube_angle[X] * M_PI / 180;
+	angle[0][Y] = -cube_angle[3] * cube_angle[Y] * M_PI / 180;
+	angle[0][Z] = -cube_angle[3] * cube_angle[Z] * M_PI / 180;
+	angle[1][X] = cube_angle[3] * cube_angle[X] * M_PI / 180;
+	angle[1][Y] = cube_angle[3] * cube_angle[Y] * M_PI / 180;
+	angle[1][Z] = cube_angle[3] * cube_angle[Z] * M_PI / 180;
+	Spot_Rotate(Atom[atom->atnum].virtual_x, Atom[atom->atnum].x, cube_spot, angle[0]);
+	Spot_Rotate(Atom[atom->atnum].virtual_v, Atom[atom->atnum].v, cube_spot, angle[0]);
+	if (atom->flag[0] == IN){
+		for (int xyz = X; xyz <= Z; xyz++){
+
+			if (((wall_spot[0][xyz] - ATOM_SCALE < Atom[atom->atnum].virtual_x[xyz]) && (wall_spot[0][xyz] + ATOM_SCALE > Atom[atom->atnum].virtual_x[xyz])) ||
+				((wall_spot[1][xyz] + ATOM_SCALE > Atom[atom->atnum].virtual_x[xyz]) && (wall_spot[1][xyz] - ATOM_SCALE < Atom[atom->atnum].virtual_x[xyz]))){
+				if (Atom[atom->atnum].virtual_x[xyz] * Atom[atom->atnum].virtual_v[xyz] > 0){//壁に向かってすすんでいるときは衝突
+					Atom[atom->atnum].virtual_v[xyz] *= -WALL_E;
+				}
+			}
+
+		}
+		Correct_Spot_Wall2(Atom[atom->atnum].virtual_x, wall_spot);
+	}
+	Spot_Rotate(Atom[atom->atnum].x, Atom[atom->atnum].virtual_x, cube_spot, angle[1]);
+	Spot_Rotate(Atom[atom->atnum].v, Atom[atom->atnum].virtual_v, cube_spot, angle[1]);
+	_endthreadex(0);
 	return 0;
 }
 
-unsigned int __stdcall thread_func2(void *dmy)
-{
-	for (int i = 0; i < now_atom_num; i++){
-		//printf("IN%d\n",i);
-		if (Atom[i].flag[0] == IN){
-			/*壁付近で原子の半径より近いか判定*/
-			if (((wall_spot[0][Y] - ATOM_SCALE < Atom[i].virtual_x[Y]) && (wall_spot[0][Y] + ATOM_SCALE > Atom[i].virtual_x[Y])) ||
-				((wall_spot[1][Y] + ATOM_SCALE > Atom[i].virtual_x[Y]) && (wall_spot[1][Y] - ATOM_SCALE < Atom[i].virtual_x[Y]))){
-				Atom[i].wall_collision[Y] = ON;
-				if (Atom[i].virtual_x[Y] * Atom[i].virtual_v[Y] > 0){//壁に向かってすすんでいるときは衝突
-					Atom[i].reflect[Y] = ON;
-				}
-				if (Atom[i].reflect[Y] == ON){
-					Atom[i].virtual_v[Y] *= -WALL_E;
-					Atom[i].reflect[Y] = OFF;
-				}
-			}
-			else{
-				Atom[i].wall_collision[Y] = OFF;
-			}
-		}
-	}
-	printf("2\n");
-	return 0;
-}
-
-unsigned int __stdcall thread_func3(void *dmy)
-{
-	for (int i = 0; i < now_atom_num; i++){
-		//printf("IN%d\n",i);
-		if (Atom[i].flag[0] == IN){
-			/*壁付近で原子の半径より近いか判定*/
-			if (((wall_spot[0][Z] - ATOM_SCALE < Atom[i].virtual_x[Z]) && (wall_spot[0][Z] + ATOM_SCALE > Atom[i].virtual_x[Z])) ||
-				((wall_spot[1][Z] + ATOM_SCALE > Atom[i].virtual_x[Z]) && (wall_spot[1][Z] - ATOM_SCALE < Atom[i].virtual_x[Z]))){
-				Atom[i].wall_collision[Z] = ON;
-				if (Atom[i].virtual_x[Z] * Atom[i].virtual_v[Z] > 0){//壁に向かってすすんでいるときは衝突
-					Atom[i].reflect[Z] = ON;
-				}
-				if (Atom[i].reflect[Z] == ON){
-					Atom[i].virtual_v[Z] *= -WALL_E;
-					Atom[i].reflect[Z] = OFF;
-				}
-			}
-			else{
-				Atom[i].wall_collision[Z] = OFF;
-			}
-		}
-	}
-	printf("3\n");
-	return 0;
-}
 void ModelDarw(void){
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//設定した背景の色ので描写バッファをクリア
@@ -154,10 +150,6 @@ void Object_Move(double x, double y, double z){
 
 void ModelMove(void){
 	static int time_counter = 0;
-	 int thread = 1;
-	//printf("move%d\n", move_task);
-	//_beginthreadex(NULL, 0, &thread_func, NULL, 0, NULL);
-	//printf("thread\n");
 	switch (move_task){
 	case 0:
 		teapot_angle[3] += 0.1;
@@ -176,6 +168,9 @@ void ModelMove(void){
 		if (teapot_angle[3] > 45.0){
 			move_task++;
 		}
+		Atom_Setting(Atom, now_atom_num);
+		Atom_Conflict(Atom, now_atom_num);
+		Wall_Conflict2(Atom, now_atom_num, wall_spot);
 	case 2:
 		time_counter++;
 		if (time_counter > APEAR_INTERVAL){
@@ -186,19 +181,28 @@ void ModelMove(void){
 		if (now_atom_num >= ATOM_NUM){
 			move_task++;
 		}
+		Atom_Setting(Atom, now_atom_num);
+		Atom_Conflict(Atom, now_atom_num);
+		Wall_Conflict2(Atom, now_atom_num, wall_spot);
 		break;
 	case 3:
 		teapot_angle[3] -= 0.1;
 		if (teapot_angle[3] <= 0){
 			move_task++;
 		}
+		Atom_Setting(Atom, now_atom_num);
+		Atom_Conflict(Atom, now_atom_num);
+		Wall_Conflict2(Atom, now_atom_num, wall_spot);
 		break;
 	case 4:
 		cube_angle[3] += 0.1;
 		//Object_Move(0.05, -0.01, 0.0);
-		if (cube_angle[3] >= 90){
+		if (cube_angle[3] >= 45){
 			move_task++;
 		}
+		Atom_Setting(Atom, now_atom_num);
+		Atom_Conflict(Atom, now_atom_num);
+		Wall_Conflict4(Atom, now_atom_num, wall_spot, cube_spot, cube_angle);
 		break;
 	case 5:
 		/*Object_Move(0.05, +0.01, 0.0);
@@ -243,20 +247,16 @@ void ModelMove(void){
 		}
 		break;
 	}
-	
-	//printf("bbbbb\n");
-	Wall_Conflict4(Atom, now_atom_num, wall_spot, cube_spot, cube_angle);
-	Atom_Conflict(Atom, now_atom_num);
-//	Wall_Conflict2(Atom, now_atom_num, wall_spot);
-	//_endthread();
-	//printf("th%d\n", thread);
+
 	for (int i = 0; i < now_atom_num; i++){
 		if (Atom[i].x[Y] > wall_spot[1][Y] + ATOM_SCALE){
 			Atom[i].v[Y] -= GGGGG*dT;
+			//printf("v%d-%lf\n", i,Atom[i].v[Y]);
 		}
 		Atom[i].x[X] += Atom[i].v[X] * dT;
 		Atom[i].x[Y] += Atom[i].v[Y] * dT;
 		Atom[i].x[Z] += Atom[i].v[Z] * dT;
+		//printf("y%d??%lf\n", i, Atom[i].x[Y]);
 	}
 	ModelDarw();
 }
