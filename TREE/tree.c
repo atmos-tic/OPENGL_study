@@ -37,10 +37,10 @@ void draw_tree(int n, double len){
 }
 void draw_branch2d(int n, double len, int pm){
 	if (n > 1){
-		/*Š²A}*/
+		/*å¹¹ã€æ*/
 		glColor3d(0.5, 0.2, 0.0);
 	}else{
-		/*—t*/
+		/*è‘‰*/
 		glColor3d(0.0, 0.8, 0.1);
 	}
 	if (n <= 0){
@@ -56,32 +56,32 @@ void draw_branch2d(int n, double len, int pm){
 		glVertex2d(0.0, len);
 		glEnd();
 		
-		glPushMatrix();//Å‰‚É¶‘¤
-		if (pm > 0){//ŠO‘¤
+		glPushMatrix();//æœ€åˆã«å·¦å´
+		if (pm > 0){//å¤–å´
 			printf("a\n");
 			glTranslated(0.0, len, 0.0);
 			glRotated(2.0*n, 0.0, 0.0, 1.0);
 			draw_branch2d(n - 1, len*0.80, pm);
 		}
-		else{//“à‘¤
+		else{//å†…å´
 			printf("b\n");
 			glTranslated(0.0, len, 0.0);
 			glRotated(3.0*n, 0.0, 0.0, 1.0);
-			draw_branch2d(n - 2, len, pm);//“à‘¤‚Í}‚ÌL‚Ñ‚ğŒ¸‚ç‚·
+			draw_branch2d(n - 2, len, pm);//å†…å´ã¯æã®ä¼¸ã³ã‚’æ¸›ã‚‰ã™
 		}
 		glPopMatrix();
-		glPushMatrix();//Å‰‚É‰E‘¤
-		if (pm < 0){//ŠO‘¤
+		glPushMatrix();//æœ€åˆã«å³å´
+		if (pm < 0){//å¤–å´
 			printf("c\n");
 			glTranslated(0.0, len, 0.0);
 			glRotated(-2.0*n, 0.0, 0.0, 1.0);
 			draw_branch2d(n - 1, len*0.80, pm);
 		}
-		else{//“à‘¤
+		else{//å†…å´
 			printf("d\n");
 			glTranslated(0.0, len, 0.0);
 			glRotated(-3.0*n, 0.0, 0.0, 1.0);
-			draw_branch2d(n - 2, len, pm);//“à‘¤‚Í}‚ÌL‚Ñ‚ğŒ¸‚ç‚·B
+			draw_branch2d(n - 2, len, pm);//å†…å´ã¯æã®ä¼¸ã³ã‚’æ¸›ã‚‰ã™ã€‚
 		}
 		glPopMatrix();
 
@@ -89,11 +89,11 @@ void draw_branch2d(int n, double len, int pm){
 }
 void draw_branch(int n, double len, int pm){
 	if (n > 2){
-		/*Š²A}*/
+		/*å¹¹ã€æ*/
 		glColor3d(0.5, 0.2, 0.0);
 	}
 	else{
-		/*—t*/
+		/*è‘‰*/
 		glColor3d(0.0, 0.5, 0.0);
 	}
 	if (n <= 0){
@@ -109,35 +109,35 @@ void draw_branch(int n, double len, int pm){
 		glVertex3d(0.0, len, 0.0);
 		glEnd();
 
-		glPushMatrix();//Å‰‚É¶‘¤
-		if (pm == 1){//ŠO‘¤
+		glPushMatrix();//æœ€åˆã«å·¦å´
+		if (pm == 1){//å¤–å´
 			printf("a\n");
 			glTranslated(0.0, len, 0.0);
 			glRotated(2.0*n, 0.0, 1.0, 0.3);
 			draw_branch(n - 1, len*0.80, pm);
 			pm *= -1;
 		}
-		else{//“à‘¤
+		else{//å†…å´
 			printf("b\n");
 			glTranslated(0.0, len, 0.0);
 			glRotated(3.0*n, 1.0, 0.0, 0.3);
-			draw_branch(n - 2, len, pm);//“à‘¤‚Í}‚ÌL‚Ñ‚ğŒ¸‚ç‚·
+			draw_branch(n - 2, len, pm);//å†…å´ã¯æã®ä¼¸ã³ã‚’æ¸›ã‚‰ã™
 			pm *= -1;
 		}
 		glPopMatrix();
-		glPushMatrix();//Å‰‚É‰E‘¤
-		if (pm == 1){//ŠO‘¤
+		glPushMatrix();//æœ€åˆã«å³å´
+		if (pm == 1){//å¤–å´
 			printf("c\n");
 			glTranslated(0.0, len, 0.0);
 			glRotated(-2.0*n, 0.0, 1.0, 0.3);
 			draw_branch(n - 1, len*0.80, pm);
 			pm *= -1;
 		}
-		else{//“à‘¤
+		else{//å†…å´
 			printf("d\n");
 			glTranslated(0.0, len, 0.0);
 			glRotated(-3.0*n, 1.0, 0.0, -0.3);
-			draw_branch(n - 2, len, pm);//“à‘¤‚Í}‚ÌL‚Ñ‚ğŒ¸‚ç‚·B
+			draw_branch(n - 2, len, pm);//å†…å´ã¯æã®ä¼¸ã³ã‚’æ¸›ã‚‰ã™ã€‚
 			pm *= -1;
 		}
 		glPopMatrix();
@@ -210,7 +210,7 @@ void make_tree(int n, double len){
 #define TABLE (1.5)
 void ModelDarw(void){
 	glClearColor(0.8, 0.8, 1.0, 0.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//İ’è‚µ‚½”wŒi‚ÌF‚Ì‚Å•`Êƒoƒbƒtƒ@‚ğƒNƒŠƒA
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//è¨­å®šã—ãŸèƒŒæ™¯ã®è‰²ã®ã§æå†™ãƒãƒƒãƒ•ã‚¡ã‚’ã‚¯ãƒªã‚¢
 	glRotated(spinAngle, 0.0, 1.0, 0.0);
 	glPushMatrix();
 		glTranslated(0.0, -2.0, 0.0);
@@ -236,16 +236,16 @@ void ModelSpin(void){
 	ModelDarw();
 }
 void reshape(int w, int h){
-	glViewport(0, 0, w, h);				//•\¦‰Â”\—Ìˆæ‚ğƒEƒBƒ“ƒhƒE‚Ì•¨—“I‘å‚«‚³‚Éİ’è
+	glViewport(0, 0, w, h);				//è¡¨ç¤ºå¯èƒ½é ˜åŸŸã‚’ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ç‰©ç†çš„å¤§ãã•ã«è¨­å®š
 	WinW = w;
 	WinH = h;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(40.0, (float)w / (float)h, 0.1, 20.0); //“Š‘–@Ë‰e‚Ì‹‘ÌÏ‚ğİ’è
-	glMatrixMode(GL_MODELVIEW);			//ƒ‚ƒfƒ‹•ÏŠ·ƒ‚[ƒh‚Éİ’è	
+	gluPerspective(40.0, (float)w / (float)h, 0.1, 20.0); //æŠ•è³‡æ³•å°„å½±ã®è¦–ä½“ç©ã‚’è¨­å®š
+	glMatrixMode(GL_MODELVIEW);			//ãƒ¢ãƒ‡ãƒ«å¤‰æ›ãƒ¢ãƒ¼ãƒ‰ã«è¨­å®š	
 	glLoadIdentity();
 //	gluLookAt(((float)MouseX_M - ((float)WinW / 2.0)) / 1280.0*20.0, ((float)MouseY_M - ((float)WinH / 2.0)) / 1024.0*20.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-	gluLookAt(2.0, 0.5, 7.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); //‹‘ÌÏ‚ÌˆÊ’u‚ğİ’è
+	gluLookAt(2.0, 0.5, 7.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); //è¦–ä½“ç©ã®ä½ç½®ã‚’è¨­å®š
 }
 
 void keyboard(unsigned char c, int x, int y){
@@ -283,20 +283,20 @@ void mouse(int button, int state, int x, int y){
 	}
 }
 
-int main(int argc, char** argv)			//argc‚ÍÀs‚Ìˆø”‚Ì”Aargv‚Í‚»‚ÌÀ‘Ô”z—ñ
+int main(int argc, char** argv)			//argcã¯å®Ÿè¡Œæ™‚ã®å¼•æ•°ã®æ•°ã€argvã¯ãã®å®Ÿæ…‹é…åˆ—
 {
-	glutInit(&argc, argv);				//OpenGL‚ÆGLUT‚Ì‰Šú‰»
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);		//RGB‚ÅF‚ğw’è‚·‚éƒ‚[ƒh‚Éİ’è
-	glutInitWindowPosition(200, 200);	//•`‰æƒEƒBƒ“ƒhƒE¶‹÷‚ÌÀ•W‚ğw’è
-	glutInitWindowSize(500, 500);		//•`‰æƒEƒBƒ“ƒhƒE‚ÌƒTƒCƒY‚ğw’è
-	glutCreateWindow("b1561297 MaterialEngineering Ishigaki Taiki");//•`‰æ—p‚ÌƒEƒBƒ“ƒhƒE‚ğŠJ‚­Bˆø”‚Íƒ^ƒCƒgƒ‹ƒo[‚Ì•¶š—ñ 
-	glEnable(GL_DEPTH_TEST);           //‰œs‚Ì”äŠrŒŸ¸
-	glutDisplayFunc(ModelDarw);			//ƒEƒBƒ“ƒhƒEƒY‚È‚¢‚É•`‰æ‚·‚éŠÖ”‚Ìƒ|ƒCƒ“ƒ^‚ğˆø”‚Éw’è
+	glutInit(&argc, argv);				//OpenGLã¨GLUTã®åˆæœŸåŒ–
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);		//RGBã§è‰²ã‚’æŒ‡å®šã™ã‚‹ãƒ¢ãƒ¼ãƒ‰ã«è¨­å®š
+	glutInitWindowPosition(200, 200);	//æç”»ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å·¦éš…ã®åº§æ¨™ã‚’æŒ‡å®š
+	glutInitWindowSize(500, 500);		//æç”»ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚µã‚¤ã‚ºã‚’æŒ‡å®š
+	glutCreateWindow("tree");//æç”»ç”¨ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‹ãã€‚å¼•æ•°ã¯ã‚¿ã‚¤ãƒˆãƒ«ãƒãƒ¼ã®æ–‡å­—åˆ— 
+	glEnable(GL_DEPTH_TEST);           //å¥¥è¡Œã®æ¯”è¼ƒæ¤œæŸ»
+	glutDisplayFunc(ModelDarw);			//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚ºãªã„ã«æç”»ã™ã‚‹é–¢æ•°ã®ãƒã‚¤ãƒ³ã‚¿ã‚’å¼•æ•°ã«æŒ‡å®š
 	glutReshapeFunc(reshape);
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
 	//	initailize();
 	glutIdleFunc(ModelSpin);
-	glutMainLoop();						//–³ŒÀƒ‹[ƒvB‚Ğ‚½‚·‚çƒ†[ƒU[‚©‚ç‚ÌƒCƒxƒ“ƒg‚ğ‘Ò‚Â
+	glutMainLoop();						//ç„¡é™ãƒ«ãƒ¼ãƒ—ã€‚ã²ãŸã™ã‚‰ãƒ¦ãƒ¼ã‚¶ãƒ¼ã‹ã‚‰ã®ã‚¤ãƒ™ãƒ³ãƒˆã‚’å¾…ã¤
 	return 0;
 }
