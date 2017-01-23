@@ -21,12 +21,14 @@ double x_R = 0, x_B = 2.0;
 double V_R = 0, V_B = -1.0, V_save = 0;
 double new_V_B = 0, new_V_R = 0;
 
-double cube_spot[3] = { 0.0, 0.0, 0.0 };
-double wall_spot[2][3] = {{ CUBE_SCALE, CUBE_SCALE, CUBE_SCALE }, {-CUBE_SCALE, -CUBE_SCALE, -CUBE_SCALE }};
-double cube_angle[4] = { 0.0, 0.0, 1.0, 0.0};
+double cube_spot[2][3] = { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 } };
+double cube_centar_spot[3] = { 0.0, 0.0, 0.0 };
+double wall_spot[2][2][3] = {{{ CUBE_SCALE, CUBE_SCALE, CUBE_SCALE }, {-CUBE_SCALE, -CUBE_SCALE, -CUBE_SCALE }},
+								{{ CUBE_SCALE, CUBE_SCALE, CUBE_SCALE }, { -CUBE_SCALE, -CUBE_SCALE, -CUBE_SCALE }}};
+double cube_angle[4] = { 0.0, 0.0, 1.0, 0.0 };
 double cube_color[3] = { 1.0, 1.0, 1.0 };
 
-double teapot_spot[3] = { -0.5, 3.5, 0.0 };
+double teapot_spot[2][3] = { { -2.5, 3.5, 0.0 }, { 2.5, 3.5, 0.0 } };
 double teapot_angle[4] = { 0.0, 0.0, -1.0, 0.0 };
 double teapot_color[3] = { 1.0, 1.0, 1.0 };
 
@@ -35,15 +37,6 @@ double atom_color[ATOM_NUM][3] = { {1.0} };
 ATOM_MAKE Atom[ATOM_NUM];
 
 int move_task = 0;
-
-unsigned int __stdcall thread_AD_func(void *dmy)
-{
-	for (int i = 0; i < now_atom_num; i++){
-		Atom[i].digital_x = Digital_Atom_Spot(Atom[i].x);
-	}
-	_endthreadex(0);
-	return 0;
-}
 
 unsigned int __stdcall thread_wall_func1(void *a)
 {
@@ -55,8 +48,8 @@ unsigned int __stdcall thread_wall_func1(void *a)
 	angle[1][X] = cube_angle[3] * cube_angle[X] * M_PI / 180;
 	angle[1][Y] = cube_angle[3] * cube_angle[Y] * M_PI / 180;
 	angle[1][Z] = cube_angle[3] * cube_angle[Z] * M_PI / 180;
-	Spot_Rotate(Atom[atom->atnum].virtual_x, Atom[atom->atnum].x, cube_spot, angle[0]);
-	Spot_Rotate(Atom[atom->atnum].virtual_v, Atom[atom->atnum].v, cube_spot, angle[0]);
+	Spot_Rotate(Atom[atom->atnum].virtual_x, Atom[atom->atnum].x, cube_centar_spot, angle[0]);
+	Spot_Rotate(Atom[atom->atnum].virtual_v, Atom[atom->atnum].v, cube_centar_spot, angle[0]);
 	if (atom->flag[0] == IN){
 		for (int xyz = X; xyz <= Z; xyz++){
 
@@ -70,8 +63,8 @@ unsigned int __stdcall thread_wall_func1(void *a)
 		}
 		Correct_Spot_Wall2(Atom[atom->atnum].virtual_x, wall_spot);
 	}
-	Spot_Rotate(Atom[atom->atnum].x, Atom[atom->atnum].virtual_x, cube_spot, angle[1]);
-	Spot_Rotate(Atom[atom->atnum].v, Atom[atom->atnum].virtual_v, cube_spot, angle[1]);
+	Spot_Rotate(Atom[atom->atnum].x, Atom[atom->atnum].virtual_x, cube_centar_spot, angle[1]);
+	Spot_Rotate(Atom[atom->atnum].v, Atom[atom->atnum].virtual_v, cube_centar_spot, angle[1]);
 	_endthreadex(0);
 	return 0;
 }
@@ -94,43 +87,17 @@ unsigned int __stdcall thread_wall_func2(void *a)
 	_endthreadex(0);
 	return 0;
 }
-unsigned int __stdcall thread_wall_func3(void *a)
-{
-	AD_ATOM_MAKE atom = (AD_ATOM_MAKE)a;
-	double angle[2][3];
-	angle[0][X] = -cube_angle[3] * cube_angle[X] * M_PI / 180;
-	angle[0][Y] = -cube_angle[3] * cube_angle[Y] * M_PI / 180;
-	angle[0][Z] = -cube_angle[3] * cube_angle[Z] * M_PI / 180;
-	angle[1][X] = cube_angle[3] * cube_angle[X] * M_PI / 180;
-	angle[1][Y] = cube_angle[3] * cube_angle[Y] * M_PI / 180;
-	angle[1][Z] = cube_angle[3] * cube_angle[Z] * M_PI / 180;
-	Spot_Rotate(Atom[atom->atnum].virtual_x, Atom[atom->atnum].x, cube_spot, angle[0]);
-	Spot_Rotate(Atom[atom->atnum].virtual_v, Atom[atom->atnum].v, cube_spot, angle[0]);
-	if (atom->flag[0] == IN){
-		for (int xyz = X; xyz <= Z; xyz++){
 
-			if (((wall_spot[0][xyz] - ATOM_SCALE < Atom[atom->atnum].virtual_x[xyz]) && (wall_spot[0][xyz] + ATOM_SCALE > Atom[atom->atnum].virtual_x[xyz])) ||
-				((wall_spot[1][xyz] + ATOM_SCALE > Atom[atom->atnum].virtual_x[xyz]) && (wall_spot[1][xyz] - ATOM_SCALE < Atom[atom->atnum].virtual_x[xyz]))){
-				if (Atom[atom->atnum].virtual_x[xyz] * Atom[atom->atnum].virtual_v[xyz] > 0){//壁に向かってすすんでいるときは衝突
-					Atom[atom->atnum].virtual_v[xyz] *= -WALL_E;
-				}
-			}
-
-		}
-		Correct_Spot_Wall2(Atom[atom->atnum].virtual_x, wall_spot);
-	}
-	Spot_Rotate(Atom[atom->atnum].x, Atom[atom->atnum].virtual_x, cube_spot, angle[1]);
-	Spot_Rotate(Atom[atom->atnum].v, Atom[atom->atnum].virtual_v, cube_spot, angle[1]);
-	_endthreadex(0);
-	return 0;
-}
 
 void ModelDarw(void){
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//設定した背景の色ので描写バッファをクリア
-	Draw_Cube(CUBE_SCALE, cube_spot, cube_angle, cube_color);
+	Object_Move
+	Draw_Cube(CUBE_SCALE, cube_spot[0], cube_angle, cube_color);
+	Draw_Cube(CUBE_SCALE, cube_spot[1], cube_angle, cube_color);
 	if (move_task < 4){
-		Draw_TeaPot(TEAPOT_SCALE, teapot_spot, teapot_angle, teapot_color);
+		Draw_TeaPot(TEAPOT_SCALE, teapot_spot[0], teapot_angle, teapot_color);
+		Draw_TeaPot_mirror(TEAPOT_SCALE, teapot_spot[0], teapot_angle, teapot_color);
 	}
 	Draw_Atom(ATOM_SCALE, Atom, now_atom_num, atom_color);
 	glutSwapBuffers();
@@ -141,11 +108,9 @@ void Object_Move(double x, double y, double z){
 	dx[0] = x;
 	dx[1] = y;
 	dx[2] = z;
-	Translate(wall_spot[0], dx);
-	Translate(wall_spot[1], dx);
-	Translate(cube_spot, dx);
-	Translate(teapot_spot, dx);
-
+	Translate(wall_spot[0][0], dx);
+	Translate(wall_spot[0][1], dx);
+	Translate(cube_centar_spot, dx);
 }
 
 void ModelMove(void){
@@ -159,11 +124,11 @@ void ModelMove(void){
 		break;
 	case 1:
 		teapot_angle[3] += 0.1;
+		teapot_angle[3] += 0.1;
 		time_counter++;
 		if (time_counter > APEAR_INTERVAL){
 			now_atom_num = (now_atom_num + 1 < ATOM_NUM) ? now_atom_num + 1 : ATOM_NUM;
 			time_counter = 0;
-			//printf("now_atom_num%d\n", now_atom_num);
 		}
 		if (teapot_angle[3] > 45.0){
 			move_task++;
@@ -176,7 +141,6 @@ void ModelMove(void){
 		if (time_counter > APEAR_INTERVAL){
 			now_atom_num = (now_atom_num + 1 < ATOM_NUM) ? now_atom_num + 1 : ATOM_NUM;
 			time_counter = 0;
-			//printf("now_atom_num%d\n", now_atom_num);
 		}
 		if (now_atom_num >= ATOM_NUM){
 			move_task++;
@@ -186,6 +150,7 @@ void ModelMove(void){
 		Wall_Conflict2(Atom, now_atom_num, wall_spot);
 		break;
 	case 3:
+		teapot_angle[3] -= 0.1;
 		teapot_angle[3] -= 0.1;
 		if (teapot_angle[3] <= 0){
 			move_task++;
@@ -202,49 +167,16 @@ void ModelMove(void){
 		}
 		Atom_Setting(Atom, now_atom_num);
 		Atom_Conflict(Atom, now_atom_num);
-		Wall_Conflict4(Atom, now_atom_num, wall_spot, cube_spot, cube_angle);
+		Wall_Conflict4(Atom, now_atom_num, wall_spot, cube_centar_spot, cube_angle);
 		break;
 	case 5:
 		/*Object_Move(0.05, +0.01, 0.0);
 		if (cube_spot[0] >= 4.0){
 			move_task++;
 		}*/
-		break;
-	case 6:
-		Object_Move(0.0, -0.01, -0.05);
-		if (cube_spot[2] <= 0.0){
-			move_task++;
-		}
-		break;
-	case 7:
-		Object_Move(0.0, +0.01, -0.05);
-		if (cube_spot[2] <= -4.0){
-			move_task++;
-		}
-		break;
-	case 8:
-		Object_Move(-0.05, -0.01, 0.0);
-		if (cube_spot[0] <= 0.0){
-			move_task++;
-		}
-		break;
-	case 9:
-		Object_Move(-0.05, 0.01, 0.0);
-		if (cube_spot[0] <= -4.0){
-			move_task++;
-		}
-		break;
-	case 10:
-		Object_Move(0.0, -0.01, 0.05);
-		if (cube_spot[2] >= 0.0){
-			move_task++;
-		}
-		break;
-	case 11:
-		Object_Move(0.0, 0.01, 0.05);
-		if (cube_spot[2] >= 4.0){
-			move_task=4;
-		}
+		Atom_Setting(Atom, now_atom_num);
+		Atom_Conflict(Atom, now_atom_num);
+		Wall_Conflict4(Atom, now_atom_num, wall_spot, cube_centar_spot, cube_angle);
 		break;
 	}
 

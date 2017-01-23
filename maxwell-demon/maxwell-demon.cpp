@@ -105,12 +105,20 @@ void Draw_TeaPot(double scale, double spot[], double angle[], double color[]){
 	glutWireTeapot(scale);
 	glPopMatrix();
 }
-
+void Draw_TeaPot_mirror(double scale, double spot[], double angle[], double color[]){
+	glPushMatrix();
+	glColor3d(color[R], color[G], color[B]);
+	glRotated(180, 0, 1, 0);
+	glTranslated(spot[X], spot[Y], spot[Z]);
+	glRotated(angle[ANGLE], angle[X], angle[Y], angle[Z]);
+	glutWireTeapot(scale);
+	glPopMatrix();
+}
 void Draw_Cube(double scale, double spot[], double angle[], double color[]){
 	glPushMatrix();
 	glColor3d(color[R], color[G], color[B]);
-	glTranslated(spot[X], spot[Y], spot[Z]);
 	glRotated(angle[ANGLE], angle[X], angle[Y], angle[Z]);
+	glTranslated(spot[X], spot[Y], spot[Z]);
 	glutWireCube(scale*2);
 	glPopMatrix();
 }

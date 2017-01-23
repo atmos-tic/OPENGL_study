@@ -1,7 +1,7 @@
 #ifndef MAXWELL_DEMON_H
 #define MAXWELL_DEMON_H
 
-#define ATOM_NUM 200
+#define ATOM_NUM 100
 
 #define ATOM_SCALE (0.15)
 #define ATOM_M (0.5)
@@ -31,6 +31,7 @@
 #define DIGITAL_Z(z) (z)
 
 typedef struct atom{
+	int atom_thermo = 0;
 	double x[3];
 	double virtual_x[3];
 	int digital_x = 0x000; // 3,7,E,C
@@ -49,6 +50,7 @@ void Atom_Apear(ATOM_MAKE atom[]);
 void Draw_Atom(double atom_scale, ATOM_MAKE atom[], int atom_num, double color[][3]);
 void Atom_thermogram(double v[], double color[]);
 void Draw_TeaPot(double scale, double spot[], double angle[], double color[]);
+void Draw_TeaPot_mirror(double scale, double spot[], double angle[], double color[]);
 void Draw_Cube(double scale, double spot[], double angle[], double color[]);
 void Correct_Spot(double Spot1[], double Spot2[], double distance);
 void Atom_Conflict(ATOM_MAKE atom[], int atom_num);
